@@ -6,6 +6,7 @@
  */
 #include "../global/global.h"
 #include "../global/config.h"
+#include "../util/mem.h"
 #include "init.h"
 #include <stdlib.h>
 
@@ -16,13 +17,13 @@ int usingTempBufferBlocks[BLOCKS_SIZE]; //0 is free; 1 is using.
 
 void initBuffer() {
 	if(BufferBlocks == (void*)0) {
-		BufferBlocks = malloc(BLOCKS_SIZE * BUFFERS_SIZE);
+		BufferBlocks = malloc_local(BLOCKS_SIZE * BUFFERS_SIZE);
 	}
 }
 
 void initTempBufferBlocks() {
 	if(TempBufferBlocks == (void*)0) {
-		TempBufferBlocks = malloc(BLOCKS_SIZE * BUFFERS_SIZE);
+		TempBufferBlocks = malloc_local(BLOCKS_SIZE * BUFFERS_SIZE);
 	}
 }
 

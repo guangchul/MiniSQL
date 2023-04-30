@@ -11,5 +11,7 @@
 
 #define WIN 1
 
+//#define LINUX 0
+
 
 #endif /* GLOBAL_MACHINE_H_ */

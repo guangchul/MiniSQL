@@ -61,10 +61,10 @@ int getFreePageBlock(Relation* relation) {
 }
 
 void blockWriteToFile(Relation* relation, int blockNo, int offset) {
-	char buffer[8192];
+	//char buffer[8192];
 	char* page = (char*) (BufferBlocks + (BUFFERS_SIZE * blockNo));
-	memcpy(buffer, page, BUFFERS_SIZE);
-	fileWrite(relation->fileNode->fd, buffer, offset, BUFFERS_SIZE);
+	//memcpy(buffer, page, BUFFERS_SIZE);
+	fileWrite(relation->fileNode->fd, page, offset, BUFFERS_SIZE);
 }
 
 int getFreeTempBufferBlockNo() {

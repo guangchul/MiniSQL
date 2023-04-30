@@ -24,7 +24,7 @@ void appendStringChar(String* string, char ch) {
 	string->data[string->length + 1] = 0;
 }
 
-char* itoa(int number) {
+char* itoa_local(int number) {
 	int _number = number;
 	int len = 0;
 	for(;;) {

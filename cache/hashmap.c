@@ -6,6 +6,8 @@
  */
 #include "cache.h"
 #include <stdlib.h>
+#include "../global/machine.h"
+#include "../util/mem.h"
 
 #define NODES_SIZE 32
 
@@ -58,7 +60,7 @@ void* getFromHashMap(int cacheId, void* key) {
 
 int putToHashMap(int cacheId, void* key, void* val) {
 	if(hashMaps[cacheId] == (void*) 0) {
-		hashMaps[cacheId] = malloc(sizeof(HashMap));
+		hashMaps[cacheId] = malloc_local(sizeof(HashMap));
 	}
 	HashMap* hashMap = hashMaps[cacheId];
 	unsigned int hashCode = calHashCode(key);

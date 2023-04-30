@@ -16,7 +16,7 @@
 #include <string.h>
 
 int createTable(FileNode* fileNode, PageHeaderData* pageHeaderData){
-	if(fileNode->fd == 0) {
+	if(fileNode->fd <= 0) {
 		if(fileNode->schema == (void*)0 || fileNode->file == (void*)0) {
 			return -1;
 		}
@@ -32,7 +32,8 @@ int createTable(FileNode* fileNode, PageHeaderData* pageHeaderData){
 	pageHeaderData->start_of_free_space = 28;
 	pageHeaderData->end_of_free_space = BUFFERS_SIZE;
 	pageHeaderData->page_no = 0;
-	char* buffer = malloc(0x2000);
+	char* buffer = malloc_local(0x2000);
+
 	memcpy(buffer, pageHeaderData, sizeof(PageHeaderData));
 	int result = fileWrite(fileNode->fd, buffer, 0, BUFFERS_SIZE);
 	free(buffer);
@@ -74,7 +75,7 @@ int insert(Relation* relation) {
 					}
 					int l = 0;
 					for(;;) {
-						if((fieldValue->value.long_value >> (8 * l)) > 0) {
+						if((fieldValue->value.long_value >> (sizeof(long) * l)) > 0) {
 							*(buffer + bufferOffset + l) = fieldValue->value.long_value >> (l * 8);
 						} else {
 							break;
@@ -86,7 +87,7 @@ int insert(Relation* relation) {
 			}
 			attrs_count++;
 		}
-		HeapTupleHeaderData* heapTupleHeaderData = malloc(sizeof(HeapTupleHeaderData) + bitCount + bufferOffset);
+		HeapTupleHeaderData* heapTupleHeaderData = malloc_local(sizeof(HeapTupleHeaderData) + bitCount + bufferOffset);
 		heapTupleHeaderData->un_distributed_01.un_distributed_uint96_01 = 0;
 		heapTupleHeaderData->un_distributed_01.un_distributed_uint96_02 = 0;
 		heapTupleHeaderData->un_distributed_01.un_distributed_uint96_03 = 0;
@@ -108,7 +109,7 @@ int insert(Relation* relation) {
 		} else {
 			char* page = (char*)(BufferBlocks + (BUFFERS_SIZE * block));
 			memcpy(page + endOfFreeSpace, heapTupleHeaderData, dataSize);
-			ItemIdData* itemData = malloc(sizeof(ItemIdData));
+			ItemIdData* itemData = malloc_local(sizeof(ItemIdData));
 			itemData->lp_flag = 1;
 			itemData->lp_len = dataSize;
 			itemData->lp_off = endOfFreeSpace;

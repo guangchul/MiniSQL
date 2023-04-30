@@ -8,10 +8,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-void* alloc(unsigned int size){
+void* malloc_local(unsigned int size){
 	void* ptr = malloc(size);
 	for(int i = 0; i < size; i++){
-		memset(ptr + 1, 0, 1);
+		memset(ptr + i, 0, 1);
 	}
 	return ptr;
 }

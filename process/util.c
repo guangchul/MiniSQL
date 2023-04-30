@@ -15,6 +15,7 @@
 #include "../global/config.h"
 #include "../global/global.h"
 #include "../util/string.h"
+#include "../util/mem.h"
 
 
 int getTableNextId(Relation* relation) {
@@ -100,12 +101,11 @@ DB_Columns_Set* getColumnsSet(char* schema, DB_Table* tableInfo) {//todo refresh
 
 	int columnCount = tableInfo->columnCount;
 	int tableId = tableInfo->id;
-	DB_Columns_Set* columnsSet = malloc(sizeof(DB_Columns_Set) + (sizeof(DB_Columns*) * columnCount));
+	DB_Columns_Set* columnsSet = malloc_local(sizeof(DB_Columns_Set) + (sizeof(DB_Columns*) * columnCount));
 	columnsSet->count = columnCount;
-	FileNode* fileNode = malloc(sizeof(FileNode));
+	FileNode* fileNode = malloc_local(sizeof(FileNode));
 	fileNode->schema = schema;
 	fileNode->file = "columns.tb";
-	fileNode->fd = -1;
 	makeFileNode(fileNode);
 	List* blockList = getPageBlocks(fileNode);
 	ListNode* listNode;
@@ -172,8 +172,10 @@ char* getVal(HeapTupleHeaderData* tuple, FieldNodes* fieldNodes, int i) {
 					case CHAR:
 					case SHORT:
 					case INT:
+					{
 						int val = *((int*)addr);
-						return itoa(val);
+						return itoa_local(val);
+					}
 					case LONG:
 
 						break;

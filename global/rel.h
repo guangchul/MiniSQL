@@ -8,12 +8,19 @@
 #ifndef REL_H_
 #define REL_H_
 
+#include <stdio.h>
 #include "../util/list.h"
+#include "../global/machine.h"
 
 typedef struct FileNode{
 	char* schema;
 	char* file;
+#ifdef WIN
+	FILE* fd;
+#endif
+#ifdef LINUX
 	int fd;
+#endif
 } FileNode;
 
 typedef struct DB_Schema{

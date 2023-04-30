@@ -24,14 +24,14 @@ List* analyzeCreateStmt(CreateStmt* node, char* schema){
 	DB_Columns* table_columns[5] = {&(columns[0]), &(columns[1]), &(columns[2]), &(columns[3]), &(columns[4])};
 	FieldNodes* tableFieldNodes = makeFieldNodes(table_columns, 5);
 	int nextId = getTableNextId(tableRelation);
-	char* nextIdStr = itoa(nextId);
+	char* nextIdStr = itoa_local(nextId);
 	char fileName[67];
 	fileName[0] = 0;
 	strcat(fileName, node->tableNode->tableName);
 	strcat(fileName, ".tb");
 	fileName[strlen(node->tableNode->tableName) + 3] = 0;
 	char* tabels_into_values[1][5] = {
-			{nextIdStr, node->tableNode->tableName, fileName, itoa(node->tableElementList->length), "0"}
+			{nextIdStr, node->tableNode->tableName, fileName, itoa_local(node->tableElementList->length), "0"}
 	};
 	FieldValuesList* tableFieldValuesList = makeFieldValuesList(tableFieldNodes, (char**)tables_into_columns, (char***)tabels_into_values, 5, 1);
 	tableRelation->fieldNodes = tableFieldNodes;
@@ -51,8 +51,8 @@ List* analyzeCreateStmt(CreateStmt* node, char* schema){
 	int idx = 0;
 	foreach(listNode, node->tableElementList){
 		ColumnNode* columnNode = (ColumnNode*)listNode->value.ptr_val;
-		char* columnsNextIdStr = itoa(columnsNextId + idx);
-		char* temp[5] = {columnsNextIdStr, nextIdStr, columnNode->fieldName, itoa(columnNode->length), itoa(columnNode->flag)};
+		char* columnsNextIdStr = itoa_local(columnsNextId + idx);
+		char* temp[5] = {columnsNextIdStr, nextIdStr, columnNode->fieldName, itoa_local(columnNode->length), itoa_local(columnNode->flag)};
 		for(int j = 0; j < 5; j++) {
 			columns_into_values[idx][j] = temp[j];
 		}
@@ -101,7 +101,6 @@ List* analyzeInsertStmt(InsertStmt* node, char* schema) {
 	fileNode->schema = schema;
 	DB_Table* tableInfo = getTableInfo(schema, node->tableNode->tableName, (void*)0);
 	fileNode->file = tableInfo->fileName;
-	fileNode->fd = -1;
 	makeFileNode(fileNode);
 	DB_Columns_Set* columnsSet = getColumnsSet(schema, tableInfo);
 	FieldNodes* fieldNodes = makeFieldNodes(columnsSet->columns, columnsSet->count);

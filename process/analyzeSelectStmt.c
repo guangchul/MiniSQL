@@ -12,6 +12,7 @@
 #include "../file/file.h"
 #include <stdlib.h>
 #include <string.h>
+#include "../util/mem.h"
 
 DB_Columns* getColumnsFromSet(DB_Columns_Set* columnsSet, char* fieldName) {
 	for(int i = 0; i < columnsSet->count; i++) {
@@ -133,10 +134,9 @@ List* analyzeSelectStmt(SelectStmt* node, char* schema) {
 
 		checkWhereClause(node->whereClause, fromClause->alias, fromClause->name);
 
-		FileNode* fileNode = (FileNode*)malloc(sizeof(FileNode));
+		FileNode* fileNode = (FileNode*)malloc_local(sizeof(FileNode));
 		fileNode->schema = schema;
 		fileNode->file = tableInfo->fileName;
-		fileNode->fd = -1;
 		makeFileNode(fileNode);
 
 		Relation* relation = malloc(sizeof(Relation));

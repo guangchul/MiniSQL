@@ -8,10 +8,11 @@
 
 #include "list.h"
 #include <stdlib.h>
+#include "../util/mem.h"
 
 List* makeList() {
 	List* list;
-	list = malloc(sizeof(List));
+	list = malloc_local(sizeof(List));
 	ListNode* listNode = malloc(sizeof(ListNode));
 	listNode->next = (void*)0;
 	listNode->value.ptr_val = (void*)0;
@@ -24,7 +25,7 @@ List* makeList() {
 
 void listAppend(List* list, void* val) {
 	list->tail->value.ptr_val = val;
-	ListNode* next = malloc(sizeof(ListNode));
+	ListNode* next = malloc_local(sizeof(ListNode));
 	next->next = (void*)0;
 	next->value.ptr_val = (void*)0;
 	list->tail->next = next;
@@ -34,7 +35,7 @@ void listAppend(List* list, void* val) {
 
 void listAppend_int(List* list, int val) {
 	list->tail->value.int_val = val;
-	ListNode* next = malloc(sizeof(ListNode));
+	ListNode* next = malloc_local(sizeof(ListNode));
 	next->next = (void*)0;
 	next->value.ptr_val = (void*)0;
 	list->tail->next = next;

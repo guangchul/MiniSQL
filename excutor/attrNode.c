@@ -9,6 +9,7 @@
 #include "../global/rel.h"
 #include <stdlib.h>
 #include <string.h>
+#include "../util/mem.h"
 
 unsigned char calcFieldFlag(FieldType fieldType, unsigned int* length, char nullable){
 	unsigned short type;
@@ -44,11 +45,11 @@ unsigned char calcFieldFlag(FieldType fieldType, unsigned int* length, char null
 }
 
 FieldNodes* makeFieldNodes(DB_Columns** columns, int count) {
-	FieldNodes* fieldNodes = malloc(sizeof(FieldNodes) + (sizeof(FieldNode) * count));
+	FieldNodes* fieldNodes = malloc_local(sizeof(FieldNodes) + (sizeof(FieldNode) * count));
 	fieldNodes->length = count;
 	for(int i = 0; i < count; i++) {
 		DB_Columns* column = columns[i];
-		FieldNode* node = malloc(sizeof(FieldNode));
+		FieldNode* node = malloc_local(sizeof(FieldNode));
 		node->id = column->id;
 		node->fieldName = column->fieldName;
 		node->length = column->length;
@@ -76,12 +77,12 @@ int getColumnsNo(char** into_columns, int columnCount, char* fieldName) {
 }
 
 FieldValuesList* makeFieldValuesList(FieldNodes* fieldNodes, char** into_columns, char*** into_values, int columnCount, int valuesCount) {
-	FieldValuesList* fieldValuesList = malloc(sizeof(FieldValuesList) + (sizeof(FieldValues*) * valuesCount));
+	FieldValuesList* fieldValuesList = malloc_local(sizeof(FieldValuesList) + (sizeof(FieldValues*) * valuesCount));
 	fieldValuesList->length = valuesCount;
 	for(int seq = 0; seq < valuesCount; seq++) {
-		char** into_value = (char**)(((char*)into_values) + (8 * columnCount * seq));
+		char** into_value = (char**)(((char*)into_values) + (sizeof(char*) * columnCount * seq));
 		int i = 0;
-		FieldValues* fieldValues = malloc(sizeof(FieldValues) + (sizeof(FieldValue*) * fieldNodes->length));
+		FieldValues* fieldValues = malloc_local(sizeof(FieldValues) + (sizeof(FieldValue*) * fieldNodes->length));
 		fieldValues->length = fieldNodes->length;
 		for(;;) {
 			if(i == fieldNodes->length) {
@@ -89,7 +90,7 @@ FieldValuesList* makeFieldValuesList(FieldNodes* fieldNodes, char** into_columns
 			}
 			FieldNode* fieldNode = fieldNodes->fieldNode[i];
 			int columnNo = getColumnsNo(into_columns, columnCount, fieldNode->fieldName);
-			FieldValue* fieldValue = malloc(sizeof(FieldValue));
+			FieldValue* fieldValue = malloc_local(sizeof(FieldValue));
 			if(columnNo == -1) {//when columnNo == -1,then throws a exception.
 				fieldValues->value[i] = fieldValue;
 				i++;
@@ -105,10 +106,12 @@ FieldValuesList* makeFieldValuesList(FieldNodes* fieldNodes, char** into_columns
 					fieldValue->value.long_value = atoi(value);
 					break;
 				default:
-					char* ptr = (char*)malloc(strlen(value));
+				{
+					char* ptr = (char*)malloc_local(strlen(value) + 1);
 					memcpy(ptr, value, strlen(value));
 					fieldValue->value.ptr_value = ptr;
 					break;
+				}
 			}
 			fieldValues->value[i] = fieldValue;
 			i++;

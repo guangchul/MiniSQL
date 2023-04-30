@@ -8,6 +8,6 @@
 #ifndef MEM_H_
 #define MEM_H_
 
-extern void* alloc(unsigned int size);
+extern void* malloc_local(unsigned int size);
 
 #endif /* MEM_H_ */

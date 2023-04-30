@@ -9,6 +9,7 @@
 #include "../util/list.h"
 #include "../file/file.h"
 #include "../excutor/column.h"
+#include "../util/mem.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -60,11 +61,11 @@ void initSchema() {
 	DB_Columns* _columns[3] = {&(columns[16]), &(columns[17]), &(columns[18])};
 	FieldNodes* fieldNodes = makeFieldNodes(_columns, 3);
 	FieldValuesList* fieldValuesList = makeFieldValuesList(fieldNodes, (char**)schema_into_columns, (char***)schema_into_values, columnCount, valuesCount);
-	Relation* relation = malloc(sizeof(Relation));
-	FileNode* fileNode = malloc(sizeof(FileNode));
+	Relation* relation = malloc_local(sizeof(Relation));
+	FileNode* fileNode = malloc_local(sizeof(FileNode));
 	fileNode->schema = ".";
 	fileNode->file = fileName;
-	PageHeaderData* pageHeaderData = malloc(sizeof(PageHeaderData));
+	PageHeaderData* pageHeaderData = malloc_local(sizeof(PageHeaderData));
 	createTable(fileNode, pageHeaderData);
 	relation->fileNode = fileNode;
 	relation->fieldNodes = fieldNodes;
@@ -82,11 +83,11 @@ void initTables() {
 	DB_Columns* _columns[5] = {&(columns[0]), &(columns[1]), &(columns[2]), &(columns[3]), &(columns[4])};
 	FieldNodes* fieldNodes = makeFieldNodes(_columns, 5);
 	FieldValuesList* fieldValuesList = makeFieldValuesList(fieldNodes, (char**)tables_into_columns, (char***)tables_into_values, columnCount, valuesCount);
-	Relation* relation = malloc(sizeof(Relation));
-	FileNode* fileNode = malloc(sizeof(FileNode));
+	Relation* relation = malloc_local(sizeof(Relation));
+	FileNode* fileNode = malloc_local(sizeof(FileNode));
 	fileNode->schema = SCHEMA;
 	fileNode->file = fileName;
-	PageHeaderData* pageHeaderData = malloc(sizeof(PageHeaderData));
+	PageHeaderData* pageHeaderData = malloc_local(sizeof(PageHeaderData));
 	createTable(fileNode, pageHeaderData);
 	relation->fileNode = fileNode;
 	relation->fieldNodes = fieldNodes;
@@ -103,11 +104,11 @@ void initColumns() {
 	DB_Columns* _columns[5] = {&(columns[5]), &(columns[6]), &(columns[7]), &(columns[8]), &(columns[9])};
 	FieldNodes* fieldNodes = makeFieldNodes(_columns, 5);
 	FieldValuesList* fieldValuesList = makeFieldValuesList(fieldNodes, (char**)columns_into_columns, (char***)columns_into_values, columnCount, valuesCount);
-	Relation* relation = malloc(sizeof(Relation));
-	FileNode* fileNode = malloc(sizeof(FileNode));
+	Relation* relation = malloc_local(sizeof(Relation));
+	FileNode* fileNode = malloc_local(sizeof(FileNode));
 	fileNode->schema = SCHEMA;
 	fileNode->file = fileName;
-	PageHeaderData* pageHeaderData = malloc(sizeof(PageHeaderData));
+	PageHeaderData* pageHeaderData = malloc_local(sizeof(PageHeaderData));
 	createTable(fileNode, pageHeaderData);
 	relation->fileNode = fileNode;
 	relation->fieldNodes = fieldNodes;
@@ -124,8 +125,8 @@ void initIndices() {
 	DB_Columns* _columns[6] = {&(columns[10]), &(columns[11]), &(columns[12]), &(columns[13]), &(columns[14]), &(columns[15])};
 	FieldNodes* fieldNodes = makeFieldNodes(_columns, 6);
 	FieldValuesList* fieldValuesList = makeFieldValuesList(fieldNodes, (char**)indices_into_columns, (char***)indices_into_values, columnCount, valuesCount);
-	Relation* relation = malloc(sizeof(Relation));
-	FileNode* fileNode = malloc(sizeof(FileNode));
+	Relation* relation = malloc_local(sizeof(Relation));
+	FileNode* fileNode = malloc_local(sizeof(FileNode));
 	fileNode->schema = SCHEMA;
 	fileNode->file = fileName;
 	PageHeaderData* pageHeaderData = malloc(sizeof(PageHeaderData));

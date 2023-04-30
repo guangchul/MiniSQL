@@ -9,6 +9,11 @@
 #include "../cache/cache.h"
 #include "file.h"
 #include <stdlib.h>
+#include "../global/machine.h"
+#include "../util/mem.h"
+#ifdef WIN
+#include <sys/stat.h>
+#endif
 
 void makeFileNode(FileNode* fileNode) {
 	if(fileNode->fd <= 0) {
@@ -25,6 +30,14 @@ void makeFileNode(FileNode* fileNode) {
 				int mode = O_RDWR|O_CREAT|FILE_BINARY;
 				int perm = (S_IRUSR | S_IWUSR);
 				fileNode->fd = fileOpen(fileName, mode, perm);
+#ifdef WIN
+				char* fdStr = malloc_local(sizeof(FILE));
+				memcpy(fdStr, fileNode->fd, sizeof(FILE));
+			} else {
+				fileNode->fd = (FILE*)val;
+			}
+#endif
+#ifdef LINUX
 				char* fdStr = malloc(4);
 				for(int i = 0; i < 4; i++){
 					memset(fdStr + i, fileNode->fd >> (8 * i), 1);
@@ -33,6 +46,7 @@ void makeFileNode(FileNode* fileNode) {
 			} else {
 				fileNode->fd = *((int*)val);
 			}
+#endif
 		}
 	}
 }

@@ -16,6 +16,6 @@ typedef struct String{
 extern String* makeString();
 extern void resetString(String* string);
 extern void appendStringChar(String* string, char ch);
-extern char* itoa(int number);
+extern char* itoa_local(int number);
 
 #endif /* STRING_H_ */
