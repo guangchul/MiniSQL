@@ -12,38 +12,39 @@
 #include "process.h"
 #include <stdlib.h>
 #include <string.h>
+#include "../util/mem.h"
 
 List* analyzeCreateStmt(CreateStmt* node, char* schema){
 	List* list = makeList();
 
-	FileNode* talbeFileNode = (FileNode*)malloc(sizeof(FileNode));
+	FileNode* talbeFileNode = (FileNode*)malloc_local(sizeof(FileNode));
 	talbeFileNode->schema = schema;
 	talbeFileNode->file = "tables.tb";
-	Relation* tableRelation = (Relation*) malloc(sizeof(Relation));
+	Relation* tableRelation = (Relation*) malloc_local(sizeof(Relation));
 	tableRelation->fileNode = talbeFileNode;
 	DB_Columns* table_columns[5] = {&(columns[0]), &(columns[1]), &(columns[2]), &(columns[3]), &(columns[4])};
 	FieldNodes* tableFieldNodes = makeFieldNodes(table_columns, 5);
 	int nextId = getTableNextId(tableRelation);
 	char* nextIdStr = itoa_local(nextId);
-	char fileName[67];
+	char* fileName = malloc_local(67);
 	fileName[0] = 0;
 	strcat(fileName, node->tableNode->tableName);
 	strcat(fileName, ".tb");
-	fileName[strlen(node->tableNode->tableName) + 3] = 0;
 	char* tabels_into_values[1][5] = {
 			{nextIdStr, node->tableNode->tableName, fileName, itoa_local(node->tableElementList->length), "0"}
 	};
 	FieldValuesList* tableFieldValuesList = makeFieldValuesList(tableFieldNodes, (char**)tables_into_columns, (char***)tabels_into_values, 5, 1);
+	free(fileName);
 	tableRelation->fieldNodes = tableFieldNodes;
 	tableRelation->fieldValuesList = tableFieldValuesList;
 	listAppend(list, tableRelation);
 
-	FileNode* columnsFileNode = (FileNode*)malloc(sizeof(FileNode));
+	FileNode* columnsFileNode = (FileNode*)malloc_local(sizeof(FileNode));
 	columnsFileNode->schema = schema;
 	columnsFileNode->file = "columns.tb";
 	DB_Columns* columns_columns[5] = {&(columns[5]), &(columns[6]), &(columns[7]), &(columns[8]), &(columns[9])};
 	FieldNodes* columnsFieldNodes = makeFieldNodes(columns_columns, 5);
-	Relation* columnsRelation = (Relation*) malloc(sizeof(Relation));
+	Relation* columnsRelation = (Relation*) malloc_local(sizeof(Relation));
 	columnsRelation->fileNode = columnsFileNode;
 	int columnsNextId = getTableNextId(columnsRelation);
 	char* columns_into_values[node->tableElementList->length][5];
@@ -68,7 +69,7 @@ List* analyzeCreateStmt(CreateStmt* node, char* schema){
 }
 
 char** parseListToIntoColumns(List* list) {
-	char** intoColumns = malloc(sizeof(char*) * list->length);
+	char** intoColumns = malloc_local(sizeof(char*) * list->length);
 	ListNode* listNode;
 	int idx = 0;
 	foreach(listNode, list) {
@@ -79,7 +80,7 @@ char** parseListToIntoColumns(List* list) {
 }
 
 char*** parseListToIntoValues(List* list, int columnCount) {
-	char** intoValues = malloc(sizeof(char*) * list->length * columnCount);
+	char** intoValues = malloc_local(sizeof(char*) * list->length * columnCount);
 	ListNode* listNode;
 	int i = 0;
 	foreach(listNode, list) {
@@ -97,7 +98,7 @@ char*** parseListToIntoValues(List* list, int columnCount) {
 
 List* analyzeInsertStmt(InsertStmt* node, char* schema) {
 	//todo when node->columnsList->length != 0 and node->columnsList->length != node->valuesList[i]->length then throw exception.
-	FileNode* fileNode = (FileNode*)malloc(sizeof(FileNode));
+	FileNode* fileNode = (FileNode*)malloc_local(sizeof(FileNode));
 	fileNode->schema = schema;
 	DB_Table* tableInfo = getTableInfo(schema, node->tableNode->tableName, (void*)0);
 	fileNode->file = tableInfo->fileName;
@@ -112,7 +113,7 @@ List* analyzeInsertStmt(InsertStmt* node, char* schema) {
 	char** intoColumns = parseListToIntoColumns(node->columnsList);
 	char*** intoValues = parseListToIntoValues(node->valuesList, node->columnsList->length);
 	FieldValuesList* fieldValuesList = makeFieldValuesList(fieldNodes, intoColumns, intoValues, node->columnsList->length, node->valuesList->length);
-	Relation* relation = malloc(sizeof(Relation));
+	Relation* relation = malloc_local(sizeof(Relation));
 	relation->fileNode = fileNode;
 	relation->fieldNodes = fieldNodes;
 	relation->fieldValuesList = fieldValuesList;

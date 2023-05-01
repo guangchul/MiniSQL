@@ -443,7 +443,6 @@ static const flex_int16_t yy_chk[40] =
 /*
 *flex_l:
 *	flex -o ../parse/flex.c ../parse/flex.l
-*
 *bison_y:
 *	bison -o ../parse/bison.c -d ../parse/bison.y
 */
@@ -451,6 +450,7 @@ static const flex_int16_t yy_chk[40] =
 #include <stdio.h>
 #include <stdlib.h>
 #include "../node/parseNodes.h"
+#include "../util/mem.h"
 #include "ptype.h"
 #include "bison.h"
 #include "token.h"
@@ -797,7 +797,7 @@ YY_RULE_SETUP
 #line 33 "../parse/flex.l"
 {
 	int len = strlen(yytext);
-	char* buff = malloc(len);
+	char* buff = malloc_local(len + 1);
 	memcpy(buff, yytext, len);
 	yylval->keyword = buff;
 	int tokenNo;

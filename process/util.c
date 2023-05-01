@@ -39,11 +39,11 @@ DB_Table* getTableInfo(char* schema, char* tableName, char* alias) {//todo refre
 	if(val != (void*)0){
 		return (DB_Table*)val;
 	}
-	FileNode* fileNode = malloc(sizeof(FileNode));
+	FileNode* fileNode = malloc_local(sizeof(FileNode));
 	fileNode->schema = schema;
 	fileNode->file = "tables.tb";
 	makeFileNode(fileNode);
-	Relation* relation = malloc(sizeof(Relation));
+	Relation* relation = malloc_local(sizeof(Relation));
 	relation->fileNode = fileNode;
 	int block = getFreePageBlock(relation);
 	void* page = (void*)(BufferBlocks + (block * BUFFERS_SIZE));
@@ -60,14 +60,14 @@ DB_Table* getTableInfo(char* schema, char* tableName, char* alias) {//todo refre
 		memcpy(str, bits + 1, len - 1);
 		str[len - 1] = 0;
 		if(strcmp(str, tableName) == 0) {
-			DB_Table* table = malloc(sizeof(DB_Table));
+			DB_Table* table = malloc_local(sizeof(DB_Table));
 			table->id = id;
-			char* tableName = malloc(sizeof(len - 1));
+			char* tableName = malloc_local(len);
 			memcpy(tableName, str, len - 1);
 			table->name = tableName;
 			bits = bits + len;
 			len = *bits >> 1;
-			char* fileName = malloc(sizeof(len - 1));
+			char* fileName = malloc_local(len);
 			memcpy(fileName, bits + 1, len - 1);
 			table->fileName = fileName;
 			bits = bits + len;

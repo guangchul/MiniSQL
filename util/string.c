@@ -6,10 +6,11 @@
  */
 #include "string.h"
 #include <stdlib.h>
+#include "../util/mem.h"
 
 String* makeString() {
-	String* string = malloc(sizeof(String));
-	string->data = malloc(1024);
+	String* string = malloc_local(sizeof(String));
+	string->data = malloc_local(1024);
 	string->length = 0;
 	return string;
 }

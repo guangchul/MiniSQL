@@ -11,10 +11,11 @@
 #include "../global/rel.h"
 #include <string.h>
 #include <stdlib.h>
+#include "../util/mem.h"
 
 void runCreateStmt(CreateStmt* node, List* relationList, char* processSchema){
 
-	FileNode* fileNode = malloc(sizeof(FileNode));
+	FileNode* fileNode = malloc_local(sizeof(FileNode));
 	fileNode->schema = processSchema;
 	char fileName[67];
 	fileName[0] = 0;
@@ -22,7 +23,7 @@ void runCreateStmt(CreateStmt* node, List* relationList, char* processSchema){
 	strcat(fileName, ".tb");
 	fileName[strlen(node->tableNode->tableName) + 3] = 0;
 	fileNode->file = fileName;
-	PageHeaderData* pageHeaderData = malloc(sizeof(PageHeaderData));
+	PageHeaderData* pageHeaderData = malloc_local(sizeof(PageHeaderData));
 	createTable(fileNode, pageHeaderData);
 
 	ListNode* listNode;

@@ -14,15 +14,19 @@
 #include <stdlib.h>
 
 int getChar() {
-	return getc(stdin);
+	//return getc(stdin);
+	return getchar();
 }
 
 void readSingleCommand(String* command) {
-	printf("sql> ");
+	printf("sql>");
 	fflush(stdout);
 	int c;
 	while((c = getChar()) != -1) {
 		if(c == '\n'){
+			if(command->length == 0) {
+				continue;
+			}
 			if(command->length > 1 && command->data[command->length - 1] == ';') {
 				break;
 			}

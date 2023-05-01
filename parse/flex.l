@@ -5,11 +5,11 @@
 *bison_y:
 *	bison -o ../parse/bison.c -d ../parse/bison.y
 */
-
 %{
 #include <stdio.h>
 #include <stdlib.h>
 #include "../node/parseNodes.h"
+#include "../util/meme.h"
 #include "ptype.h"
 #include "bison.h"
 #include "token.h"
@@ -32,7 +32,7 @@ star 			[*]
 
 {identifier} {
 	int len = strlen(yytext);
-	char* buff = malloc(len);
+	char* buff = malloc_local(len + 1);
 	memcpy(buff, yytext, len);
 	yylval->keyword = buff;
 	int tokenNo;

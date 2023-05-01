@@ -15,28 +15,12 @@
 #include "../global/rel.h"
 #include "../global/page.h"
 #include "../global/machine.h"
+#include <sys/types.h>
 
 extern void makeDir(const char* pathname, mode_t mode);
-extern
-#ifdef WIN
-FILE*
-#endif
-#ifdef LINUX
-int
-#endif
-fileOpen(const char *file, int mode, int perm);
-#ifdef WIN
-extern int fileRead(FILE* fd, void* buff, off_t offset, size_t size);
-#endif
-#ifdef LINUX
+extern int fileOpen(const char *file, int mode, int perm);
 extern int fileRead(int fd, void* buff, off_t offset, size_t size);
-#endif
-#ifdef WIN
-extern int fileWrite(FILE* fd, char *ptr, off_t offset, size_t size);
-#endif
-#ifdef LINUX
 extern int fileWrite(int fd, char *ptr, off_t offset, size_t size);
-#endif
 extern void makeFileNode(FileNode* fileNode);
 extern int createTable(FileNode* fileNode, PageHeaderData* pageHeaderData);
 extern int insert(Relation* relation);

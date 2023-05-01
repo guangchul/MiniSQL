@@ -8,6 +8,7 @@
 #ifndef PARSENODES_H_
 #define PARSENODES_H_
 #include "../util/list.h"
+#include "../util/mem.h"
 
 typedef enum NodeTag{
 	T_CreateStmt,
@@ -98,7 +99,7 @@ typedef struct WhereCondition{
 
 
 #define newNode(size, nodeTage) ({ \
-	Node* node = malloc(size); \
+	Node* node = malloc_local(size); \
 	node->type = nodeTage; \
 	node; \
 })
