@@ -336,7 +336,7 @@ from_list: ColId
 	;
 	
 where_clause: WHERE where_list {$$ = $2;}
-	|
+	| {$$ = (void*)0;}
 	;
 	
 where_list: where_single

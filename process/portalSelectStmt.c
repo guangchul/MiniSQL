@@ -361,6 +361,9 @@ int fileterConditionSingle(Slot* slot, WhereSingle* whereSingle) {
 int fileter(Slot* slot, List* whereClause) {
 	ListNode* listNode;
 	int result = 1;
+	if(whereClause == (void*)0) {
+		return result;
+	}
 	foreach(listNode, whereClause) {
 		WhereCondition* whereCondition = (WhereCondition*)listNode->value.ptr_val;
 		if(whereCondition->isList == 1) {

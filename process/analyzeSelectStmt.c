@@ -104,6 +104,9 @@ FieldNodes* remakeFieldNodes(List* optTargetList, DB_Columns_Set* columnsSet, ch
 
 //todo
 void checkWhereClause(List* whereClause, char* alias, char* tableName) {
+	if(whereClause == (void*)0) {
+		return;
+	}
 	if(alias == (void*)0) {
 		ListNode* listNode;
 		foreach(listNode, whereClause) {
