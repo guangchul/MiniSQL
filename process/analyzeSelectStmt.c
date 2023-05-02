@@ -35,11 +35,11 @@ FieldNodes* remakeFieldNodes(List* optTargetList, DB_Columns_Set* columnsSet, ch
 			}
 			if(strcmp(optTarget->tableAlias, alias) == 0) {
 				if(optTarget->isAll == 1) {
-					FieldNodes* fieldNodes = malloc(sizeof(FieldNodes) + (sizeof(FieldNode*) * columnsSet->count));
+					FieldNodes* fieldNodes = malloc_local(sizeof(FieldNodes) + (sizeof(FieldNode*) * columnsSet->count));
 					fieldNodes->length = columnsSet->count;
 					for(int i = 0; i < columnsSet->count; i++) {
 						DB_Columns* column = columnsSet->columns[i];
-						FieldNode* fieldNode = malloc(sizeof(FieldNode));
+						FieldNode* fieldNode = malloc_local(sizeof(FieldNode));
 						fieldNode->id = column->id;
 						fieldNode->fieldName = column->fieldName;
 						fieldNode->length = column->length;
@@ -63,11 +63,11 @@ FieldNodes* remakeFieldNodes(List* optTargetList, DB_Columns_Set* columnsSet, ch
 				optTarget->tableAlias = name;
 			}
 			if(optTarget->isAll == 1) {
-				FieldNodes* fieldNodes = malloc(sizeof(FieldNodes) + (sizeof(FieldNode*) * columnsSet->count));
+				FieldNodes* fieldNodes = malloc_local(sizeof(FieldNodes) + (sizeof(FieldNode*) * columnsSet->count));
 				fieldNodes->length = columnsSet->count;
 				for(int i = 0; i < columnsSet->count; i++) {
 					DB_Columns* column = columnsSet->columns[i];
-					FieldNode* fieldNode = malloc(sizeof(FieldNode));
+					FieldNode* fieldNode = malloc_local(sizeof(FieldNode));
 					fieldNode->id = column->id;
 					fieldNode->fieldName = column->fieldName;
 					fieldNode->length = column->length;
@@ -85,12 +85,12 @@ FieldNodes* remakeFieldNodes(List* optTargetList, DB_Columns_Set* columnsSet, ch
 		}
 	}
 	ListNode* listNode;
-	FieldNodes* fieldNodes = malloc(sizeof(FieldNodes) + (sizeof(FieldNode*) * tempList->length));
+	FieldNodes* fieldNodes = malloc_local(sizeof(FieldNodes) + (sizeof(FieldNode*) * tempList->length));
 	fieldNodes->length = tempList->length;
 	int idx = 0;
 	foreach(listNode, tempList) {
 		DB_Columns* column = (DB_Columns*)listNode->value.ptr_val;
-		FieldNode* fieldNode = malloc(sizeof(FieldNode));
+		FieldNode* fieldNode = malloc_local(sizeof(FieldNode));
 		fieldNode->id = column->id;
 		fieldNode->fieldName = column->fieldName;
 		fieldNode->length = column->length;
@@ -142,7 +142,7 @@ List* analyzeSelectStmt(SelectStmt* node, char* schema) {
 		fileNode->file = tableInfo->fileName;
 		makeFileNode(fileNode);
 
-		Relation* relation = malloc(sizeof(Relation));
+		Relation* relation = malloc_local(sizeof(Relation));
 		relation->fileNode = fileNode;
 		relation->fieldNodes = fieldNodes;
 		relation->tableInfo = tableInfo;

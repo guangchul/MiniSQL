@@ -13,7 +13,7 @@
 List* makeList() {
 	List* list;
 	list = malloc_local(sizeof(List));
-	ListNode* listNode = malloc(sizeof(ListNode));
+	ListNode* listNode = malloc_local(sizeof(ListNode));
 	listNode->next = (void*)0;
 	listNode->value.ptr_val = (void*)0;
 	listNode->value.int_val = 0;

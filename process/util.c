@@ -159,7 +159,7 @@ char* getVal(HeapTupleHeaderData* tuple, FieldNodes* fieldNodes, int i) {
 		if(flexible == 1) { //flexible
 			int len = addr[0] >> 1;
 			if(j == i) {
-				char* val = malloc(len - 1);
+				char* val = malloc_local(len);
 				memcpy(val, addr + 1, len - 1);
 				return val;
 			}

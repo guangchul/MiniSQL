@@ -67,7 +67,7 @@ int putToHashMap(int cacheId, void* key, void* val) {
 	int hashIndex = hashCode & (NODES_SIZE - 1);
 	HashMapNode* node = hashMap->nodes[hashIndex];
 	if(node == (void*)0) {
-		hashMap->nodes[hashIndex] = malloc(sizeof(HashMapNode));
+		hashMap->nodes[hashIndex] = malloc_local(sizeof(HashMapNode));
 		hashMap->nodes[hashIndex]->key = hashCode;
 		hashMap->nodes[hashIndex]->value = val;
 	} else {
@@ -77,7 +77,7 @@ int putToHashMap(int cacheId, void* key, void* val) {
 				break;
 			}
 			if(node->next == (void*)0){
-				HashMapNode* _node = malloc(sizeof(HashMapNode));
+				HashMapNode* _node = malloc_local(sizeof(HashMapNode));
 				_node->key = hashCode;
 				_node->value = val;
 				node->next = _node;

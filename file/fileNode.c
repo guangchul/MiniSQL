@@ -35,7 +35,7 @@ void makeFileNode(FileNode* fileNode) {
 #endif
 				int perm = (S_IRUSR | S_IWUSR);
 				fileNode->fd = fileOpen(fileName, mode, perm);
-				char* fdStr = malloc(4);
+				char* fdStr = malloc_local(5);
 				for(int i = 0; i < 4; i++){
 					memset(fdStr + i, fileNode->fd >> (8 * i), 1);
 				}

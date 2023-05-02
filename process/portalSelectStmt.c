@@ -12,6 +12,7 @@
 #include "../util/list.h"
 #include "../cache/cache.h"
 #include "../util/string.h"
+#include "../util/mem.h"
 #include <string.h>
 
 int match(char* left, char* op, char* right) {
@@ -143,7 +144,7 @@ int next(Relation* relation) {
 }
 
 PageHeaderData* initPageHeaderData() {
-	PageHeaderData* pageHeaderData = malloc(sizeof(PageHeaderData));
+	PageHeaderData* pageHeaderData = malloc_local(sizeof(PageHeaderData));
 	pageHeaderData->un_distributed_1.xlogid = 0;
 	pageHeaderData->un_distributed_1.xrecoff = 0;
 	pageHeaderData->un_distributed_2 = 0;
@@ -184,7 +185,7 @@ void writeToTempBufferBlocks(SelectRelationExtend* extend, HeapTupleHeaderData* 
 	}
 	int offset = (pageHeaderData->end_of_free_space - len) / 8 * 8;
 	memcpy(TempBufferBlocks + (extend->lastTempBlockNo * BUFFERS_SIZE) + offset, tuple, len);
-	ItemIdData* itemIdData = malloc(sizeof(ItemIdData));
+	ItemIdData* itemIdData = malloc_local(sizeof(ItemIdData));
 	itemIdData->lp_off = offset;
 	itemIdData->lp_len = len;
 	itemIdData->lp_flag = 1;
@@ -199,7 +200,7 @@ void appendSlot(Slot* slot, HeapTupleHeaderData* tuple, int len) {
 	int bits_count = attrs_count / 8 + 1;
 
 	int slot_len = (slot->tuple_len - slot->tuple->offset_of_data) + (len - tuple->offset_of_data);
-	slot->tuple = malloc(sizeof(HeapTupleHeaderData) + bits_count + slot_len);
+	slot->tuple = malloc_local(sizeof(HeapTupleHeaderData) + bits_count + slot_len);
 	for(int i = 0; i < _tuple->attrs_count / 8 + 1; i++) {
 		memset(slot->tuple->bits + i, _tuple->bits[i], 1);
 	}
@@ -240,7 +241,7 @@ void readBlock(Relation* relation, Slot* slot, List* whereClause) {
 					writeToTempBufferBlocks(extend, tuple, itemIdData.lp_len);
 					appendSlot(slot, tuple, itemIdData.lp_len);
 				}else if(extend->isOuter == 1) {
-					slot->tuple = malloc(itemIdData.lp_len);
+					slot->tuple = malloc_local(itemIdData.lp_len);
 					memcpy(slot->tuple, tuple, itemIdData.lp_len);
 					slot->tuple_len = itemIdData.lp_len;
 				}
@@ -270,7 +271,7 @@ void readBlock(Relation* relation, Slot* slot, List* whereClause) {
 void makeSlot(ListNode* listNode, Slot* slot, List* whereClause, int* isOut) {
 	Relation* relation = (Relation*)listNode->value.ptr_val;
 	if(relation->ext == (void*)0) {
-		SelectRelationExtend* extend = malloc(sizeof(SelectRelationExtend));
+		SelectRelationExtend* extend = malloc_local(sizeof(SelectRelationExtend));
 		extend->type = T_Select;
 		extend->alreayMadeTempBlock = 0;
 		extend->tempBlockList = makeList();
@@ -318,7 +319,7 @@ FieldNodes* makeSlotFieldNodes(List* relationList) {
 		Relation* relation = (Relation*)listNode->value.ptr_val;
 		DB_Columns_Set* colSet = relation->columnsSet;
 		for(int i = 0; i < colSet->count; i++) {
-			FieldNode* fieldNode = malloc(sizeof(FieldNode));
+			FieldNode* fieldNode = malloc_local(sizeof(FieldNode));
 			fieldNode->alias = relation->tableInfo->alias;
 			fieldNode->id = colSet->columns[i]->id;
 			fieldNode->fieldName = colSet->columns[i]->fieldName;
@@ -327,7 +328,7 @@ FieldNodes* makeSlotFieldNodes(List* relationList) {
 			listAppend(tempList, fieldNode);
 		}
 	}
-	FieldNodes* fieldNodes = malloc(sizeof(FieldNodes) + (sizeof(FieldNode*) * tempList->length));
+	FieldNodes* fieldNodes = malloc_local(sizeof(FieldNodes) + (sizeof(FieldNode*) * tempList->length));
 	fieldNodes->length = tempList->length;
 
 	int idx = 0;
@@ -381,14 +382,14 @@ int fileter(Slot* slot, List* whereClause) {
 }
 
 void runSelectStmt(SelectStmt* node, List* relationList){
-	Slot* slot = malloc(sizeof(Slot));
+	Slot* slot = malloc_local(sizeof(Slot));
 	FieldNodes* fieldNodes = makeSlotFieldNodes(relationList);
 	slot->fieldNodes = fieldNodes;
 	slot->tuple_len = 0;
 	slot->tuple = (void*)0;
 	slot->end = 0;
 	slot->loop = 0;
-	int* isOut = malloc(sizeof(int));
+	int* isOut = malloc_local(sizeof(int));
 	*isOut = 1;
 	for(;;) {
 		makeSlot(relationList->node, slot, node->whereClause, isOut);

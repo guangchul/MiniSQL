@@ -129,7 +129,7 @@ void initIndices() {
 	FileNode* fileNode = malloc_local(sizeof(FileNode));
 	fileNode->schema = SCHEMA;
 	fileNode->file = fileName;
-	PageHeaderData* pageHeaderData = malloc(sizeof(PageHeaderData));
+	PageHeaderData* pageHeaderData = malloc_local(sizeof(PageHeaderData));
 	createTable(fileNode, pageHeaderData);
 	relation->fileNode = fileNode;
 	relation->fieldNodes = fieldNodes;
