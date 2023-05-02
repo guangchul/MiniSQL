@@ -14,6 +14,7 @@ void initDir(int argc, char **argv) {
 	changeDir();
 }
 
+
 void init(int argc, char **argv){
 	initDir(argc, argv);
 	initBuffer();
