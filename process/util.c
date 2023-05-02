@@ -123,12 +123,12 @@ DB_Columns_Set* getColumnsSet(char* schema, DB_Table* tableInfo) {//todo refresh
 			bits = bits + 4;
 			int _tableId = *((int*)bits);
 			if(_tableId == tableId){
-				DB_Columns* columns = malloc(sizeof(DB_Columns));
+				DB_Columns* columns = malloc_local(sizeof(DB_Columns));
 				columns->id = _id;
 				columns->tableId = _tableId;
 				bits = bits + 4;
 				int _len = *bits >> 1;
-				char* _fieldName = malloc(_len - 1);
+				char* _fieldName = malloc_local(_len);
 				memcpy(_fieldName, bits + 1, _len - 1);
 				columns->fieldName = _fieldName;
 				bits = bits + _len;
