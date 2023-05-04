@@ -91,9 +91,9 @@ int insert(Relation* relation) {
 		heapTupleHeaderData->un_distributed_01.un_distributed_uint96_01 = 0;
 		heapTupleHeaderData->un_distributed_01.un_distributed_uint96_02 = 0;
 		heapTupleHeaderData->un_distributed_01.un_distributed_uint96_03 = 0;
-		heapTupleHeaderData->un_distributed_02.un_distributed_uint48_01 = 0;
-		heapTupleHeaderData->un_distributed_02.un_distributed_uint48_02 = 0;
-		heapTupleHeaderData->un_distributed_02.un_distributed_uint48_03 = 0;
+		heapTupleHeaderData->item_desc.page_hi = 0;
+		heapTupleHeaderData->item_desc.page_low = 0;
+		heapTupleHeaderData->item_desc.pos_id = 0;
 		heapTupleHeaderData->offset_of_data = 23 + bitCount;
 		heapTupleHeaderData->flag_bits = flag_bits;
 		heapTupleHeaderData->attrs_count = attrs_count;

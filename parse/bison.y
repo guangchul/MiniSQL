@@ -7,6 +7,8 @@ void yyerror(yyscan_t yyscanner, char *str);
 int flexable(int type);
 int calcLength(int type, int length);
 char* fnc_itoa(int number);
+typedef union YYSTYPE YYSTYPE;
+extern int yylex (YYSTYPE * yylval_param , yyscan_t yyscanner);
 %}
 
 %pure-parser
@@ -19,7 +21,7 @@ char* fnc_itoa(int number);
 	/* these fields must match core_YYSTYPE: */
 	int					ival;
 	char				*str;
-	const char			*keyword;
+	char				*keyword;
 	Node				*node;
 	TableNode			*tableNode;
 	CreateStmt			*createStmt;
@@ -29,6 +31,7 @@ char* fnc_itoa(int number);
 	OptTarget			*optTarget;
 	SelectStmt			*selectStmt;
 	WhereSingle			*whereSingle;
+	UpdateStmt			*updateStmt;
 }
 
 %type <ival> TypeName Iconst Nullable
@@ -38,13 +41,14 @@ char* fnc_itoa(int number);
 %type <str> ColId singleValue condition_op
 %type <keyword> unreserved_keyword
 %type <keyword> col_name_keyword reserved_keyword 
-%type <list> TableElementList identList columnsList opt_target_list from_list from_clause where_list where_clause
+%type <list> TableElementList identList columnsList opt_target_list from_list from_clause where_list where_clause update_where_clause simple_where_list
 %type <node> stmt
-%type <list> multi multiValue valuesList
+%type <list> multi multiValue valuesList update_value_list
 %type <insertStmt> InsertStmt
 %type <optTarget> opt_target opt_target_all opt_target_normal opt_target_as opt_target_no_as
 %type <selectStmt> SelectStmt
-%type <whereSingle> where_single
+%type <whereSingle> where_single simple_where_single
+%type <updateStmt> UpdateStmt
 
 
 %token <str>	IDENT FCONST SCONST BCONST XCONST Op
@@ -186,7 +190,136 @@ multi: stmt
 stmt:CreateStmt {$$ = (Node*)$1;}
 	|InsertStmt {$$ = (Node*)$1;}
 	|SelectStmt {$$ = (Node*)$1;}
+	|UpdateStmt {$$ = (Node*)$1;}
 	| {$$ = (void*)0;}
+	;
+	
+UpdateStmt: UPDATE ColId SET update_value_list update_where_clause
+	{
+		UpdateStmt* updateStmt = (UpdateStmt*)makeNode(UpdateStmt);
+		FromClause* fromClause = (FromClause*)makeNode(FromClause);
+		fromClause->name = $2;
+		fromClause->alias = $2;
+		updateStmt->fromClause = fromClause;
+		updateStmt->updateValueList = $4;
+		updateStmt->whereClause = $5;
+		$$ = updateStmt;
+	}
+	;
+	
+update_value_list: ColId '=' singleValue
+	{
+		UpdateValue* updateValue = (UpdateValue*)makeNode(UpdateValue);
+		updateValue->filed = $1;
+		updateValue->val = $3;
+		List* list = (List*)newList();
+		lappend(list, updateValue);
+		$$ = list;
+		
+	}
+	| update_value_list ',' ColId '=' singleValue
+	{
+		UpdateValue* updateValue = (UpdateValue*)makeNode(UpdateValue);
+		updateValue->filed = $3;
+		updateValue->val = $5;
+		lappend($1, updateValue);
+		$$ = $1;
+	}
+	;
+	
+update_where_clause: WHERE simple_where_list {$$ = $2;}
+	| {$$ = (void*)0;}
+	;
+	
+simple_where_list: simple_where_single
+	{
+		List* list = (List*)newList();
+		WhereCondition* whereCondition = (WhereCondition*)makeNode(WhereCondition);
+		whereCondition->condition = 1;
+		whereCondition->isList = 0;
+		whereCondition->whereSingle = $1;
+		lappend(list, whereCondition);
+		$$ = list;
+	}
+	| simple_where_list AND simple_where_single
+	{
+		WhereCondition* whereCondition = (WhereCondition*)makeNode(WhereCondition);
+		whereCondition->condition = 1;
+		whereCondition->isList = 0;
+		whereCondition->whereSingle = $3;
+		lappend($1, whereCondition);
+		$$ = $1;
+	}
+	| simple_where_list OR simple_where_single
+	{
+		WhereCondition* whereCondition = (WhereCondition*)makeNode(WhereCondition);
+		whereCondition->condition = 2;
+		whereCondition->isList = 0;
+		whereCondition->whereSingle = $3;
+		lappend($1, whereCondition);
+		$$ = $1;
+	}
+	| '(' simple_where_list ')'
+	{
+		List* list = (List*)newList();
+		WhereCondition* whereCondition = (WhereCondition*)makeNode(WhereCondition);
+		whereCondition->condition = 1;
+		whereCondition->isList = 1;
+		whereCondition->list = $2;
+		lappend(list, whereCondition);
+		$$ = list;
+	}
+	| simple_where_list AND '(' simple_where_list ')'
+	{
+		WhereCondition* whereCondition = (WhereCondition*)makeNode(WhereCondition);
+		whereCondition->condition = 1;
+		whereCondition->isList = 1;
+		whereCondition->list = $4;
+		lappend($1, whereCondition);
+		$$ = $1;
+	}
+	| simple_where_list OR '(' simple_where_list ')'
+	{
+		WhereCondition* whereCondition = (WhereCondition*)makeNode(WhereCondition);
+		whereCondition->condition = 2;
+		whereCondition->isList = 1;
+		whereCondition->list = $4;
+		lappend($1, whereCondition);
+		$$ = $1;
+	}
+	;
+	
+	
+simple_where_single: ColId condition_op singleValue
+	{
+		WhereSingle* whereSingle = (WhereSingle*)makeNode(WhereSingle);
+		whereSingle->op = $2;
+		whereSingle->left.isVal = 0;
+		whereSingle->left.field = $1;
+		whereSingle->right.isVal = 1;
+		whereSingle->right.val = $3;
+		$$ = whereSingle;
+	}
+	| singleValue condition_op singleValue
+	{
+		WhereSingle* whereSingle = (WhereSingle*)makeNode(WhereSingle);
+		whereSingle->op = $2;
+		whereSingle->left.isVal = 1;
+		whereSingle->left.val = $1;
+		whereSingle->right.isVal = 1;
+		whereSingle->right.val = $3;
+		$$ = whereSingle;
+	}
+	| singleValue condition_op ColId
+	{
+		WhereSingle* whereSingle = (WhereSingle*)makeNode(WhereSingle);
+		whereSingle->op = $2;
+		whereSingle->left.isVal = 1;
+		whereSingle->left.val = $1;
+		whereSingle->right.isVal = 0;
+		whereSingle->right.field = $3;
+		$$ = whereSingle;
+	}
 	;
 	
 SelectStmt: SELECT opt_target_list from_clause where_clause
@@ -236,7 +369,7 @@ opt_target_all: ALL
 		optTarget->tableAlias = $1;
 		$$ = optTarget;
 	}
-	| 
+	| {}
 	;
 	
 opt_target_normal: ColId
@@ -254,7 +387,7 @@ opt_target_normal: ColId
 		optTarget->name = $3;
 		$$ = optTarget;
 	}
-	|
+	| {}
 	;
 	
 opt_target_as: ColId AS ColId
@@ -274,7 +407,7 @@ opt_target_as: ColId AS ColId
 		optTarget->alias = $5;
 		$$ = optTarget;
 	}
-	|
+	| {}
 	;
 
 opt_target_no_as: ColId ColId
@@ -294,7 +427,7 @@ opt_target_no_as: ColId ColId
 		optTarget->alias = $4;
 		$$ = optTarget;
 	}
-	|
+	| {}
 	;
 	
 from_clause: FROM from_list {$$ = $2;}

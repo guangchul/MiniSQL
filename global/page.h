@@ -42,16 +42,16 @@ typedef struct uint96 {
 	uint32 un_distributed_uint96_03;
 }uint96;
 
-typedef struct uint48 {
-	uint16 un_distributed_uint48_01;
-	uint16 un_distributed_uint48_02;
-	uint16 un_distributed_uint48_03;
-} uint48;
+typedef struct ItemDesc {
+	uint16 page_hi;
+	uint16 page_low;
+	uint16 pos_id;
+} ItemDesc;
 
 typedef struct HeapTupleHeaderData{
 	uint96 un_distributed_01; //offset 0
-	uint48 un_distributed_02; //offset 12
-	uint16 attrs_count; //offset 18
+	ItemDesc item_desc; //offset 12
+	uint16 attrs_count; //offset 18 attrs_count = attrs_count & 0x7ff; attr_count & 0x4000 == 0x4000 is updated; attr_count & 0x2000 == 0x2000 is deleted.
 	uint16 flag_bits; //offset 20 when (flag_bits & 0x01) == 0x01 then nullable
 	uint8 offset_of_data; //offset 22
 	uint8 bits[]; //offset 23

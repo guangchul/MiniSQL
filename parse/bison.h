@@ -522,13 +522,13 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 17 "../parse/bison.y"
+#line 19 "../parse/bison.y"
 
 	core_YYSTYPE		core_yystype;
 	/* these fields must match core_YYSTYPE: */
 	int					ival;
 	char				*str;
-	const char			*keyword;
+	char				*keyword;
 	Node				*node;
 	TableNode			*tableNode;
 	CreateStmt			*createStmt;
@@ -538,8 +538,9 @@ union YYSTYPE
 	OptTarget			*optTarget;
 	SelectStmt			*selectStmt;
 	WhereSingle			*whereSingle;
+	UpdateStmt			*updateStmt;
 
-#line 543 "../parse/bison.h"
+#line 544 "../parse/bison.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

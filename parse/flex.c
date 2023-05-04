@@ -443,10 +443,11 @@ static const flex_int16_t yy_chk[40] =
 /*
 *flex_l:
 *	flex -o ../parse/flex.c ../parse/flex.l
+*
 *bison_y:
 *	bison -o ../parse/bison.c -d ../parse/bison.y
 */
-#line 10 "../parse/flex.l"
+#line 9 "../parse/flex.l"
 #include <stdio.h>
 #include <stdlib.h>
 #include "../node/parseNodes.h"
@@ -457,8 +458,9 @@ static const flex_int16_t yy_chk[40] =
 #include "parse.h"
 void yyerror(char *);
 int scanKeywordLookup();
-#line 461 "../parse/flex.c"
 #line 462 "../parse/flex.c"
+#define YY_NO_INPUT 1
+#line 464 "../parse/flex.c"
 
 #define INITIAL 0
 
@@ -570,8 +572,6 @@ extern int yywrap ( yyscan_t yyscanner );
 #endif
 
 #ifndef YY_NO_UNPUT
-    
-    static void yyunput ( int c, char *buf_ptr  , yyscan_t yyscanner);
     
 #endif
 
@@ -732,7 +732,7 @@ YY_DECL
 		}
 
 	{
-#line 31 "../parse/flex.l"
+#line 33 "../parse/flex.l"
 
 
 #line 739 "../parse/flex.c"
@@ -794,7 +794,7 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 33 "../parse/flex.l"
+#line 35 "../parse/flex.l"
 {
 	int len = strlen(yytext);
 	char* buff = malloc_local(len + 1);
@@ -810,7 +810,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 45 "../parse/flex.l"
+#line 47 "../parse/flex.l"
 {
 	yylval->keyword = "*";
 	return ALL;
@@ -818,7 +818,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 50 "../parse/flex.l"
+#line 52 "../parse/flex.l"
 {
 	yylval->ival = atoi(yytext);
 	return ICONST;
@@ -826,80 +826,80 @@ YY_RULE_SETUP
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 55 "../parse/flex.l"
+#line 57 "../parse/flex.l"
 {
 	return yytext[0];
 }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 59 "../parse/flex.l"
+#line 61 "../parse/flex.l"
 {
 	return yytext[0];
 }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 63 "../parse/flex.l"
+#line 65 "../parse/flex.l"
 {
 	return yytext[0];
 }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 67 "../parse/flex.l"
+#line 69 "../parse/flex.l"
 {
 	return yytext[0];
 }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 71 "../parse/flex.l"
+#line 73 "../parse/flex.l"
 {
 	return yytext[0];
 }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 75 "../parse/flex.l"
+#line 77 "../parse/flex.l"
 {
 	return yytext[0];
 }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 79 "../parse/flex.l"
+#line 81 "../parse/flex.l"
 {
 	return yytext[0];
 }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 82 "../parse/flex.l"
+#line 84 "../parse/flex.l"
 {
 	return yytext[0];
 }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 86 "../parse/flex.l"
+#line 88 "../parse/flex.l"
 {
 	return yytext[0];
 }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 90 "../parse/flex.l"
+#line 92 "../parse/flex.l"
 ;
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 91 "../parse/flex.l"
+#line 93 "../parse/flex.l"
 
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 92 "../parse/flex.l"
+#line 94 "../parse/flex.l"
 ECHO;
 	YY_BREAK
 #line 906 "../parse/flex.c"
@@ -1241,44 +1241,6 @@ static int yy_get_next_buffer (yyscan_t yyscanner)
 }
 
 #ifndef YY_NO_UNPUT
-
-    static void yyunput (int c, char * yy_bp , yyscan_t yyscanner)
-{
-	char *yy_cp;
-    struct yyguts_t * yyg = (struct yyguts_t*)yyscanner;
-
-    yy_cp = yyg->yy_c_buf_p;
-
-	/* undo effects of setting up yytext */
-	*yy_cp = yyg->yy_hold_char;
-
-	if ( yy_cp < YY_CURRENT_BUFFER_LVALUE->yy_ch_buf + 2 )
-		{ /* need to shift things up to make room */
-		/* +2 for EOB chars. */
-		int number_to_move = yyg->yy_n_chars + 2;
-		char *dest = &YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[
-					YY_CURRENT_BUFFER_LVALUE->yy_buf_size + 2];
-		char *source =
-				&YY_CURRENT_BUFFER_LVALUE->yy_ch_buf[number_to_move];
-
-		while ( source > YY_CURRENT_BUFFER_LVALUE->yy_ch_buf )
-			*--dest = *--source;
-
-		yy_cp += (int) (dest - source);
-		yy_bp += (int) (dest - source);
-		YY_CURRENT_BUFFER_LVALUE->yy_n_chars =
-			yyg->yy_n_chars = (int) YY_CURRENT_BUFFER_LVALUE->yy_buf_size;
-
-		if ( yy_cp < YY_CURRENT_BUFFER_LVALUE->yy_ch_buf + 2 )
-			YY_FATAL_ERROR( "flex scanner push-back overflow" );
-		}
-
-	*--yy_cp = (char) c;
-
-	yyg->yytext_ptr = yy_bp;
-	yyg->yy_hold_char = *yy_cp;
-	yyg->yy_c_buf_p = yy_cp;
-}
 
 #endif
 
@@ -2083,7 +2045,7 @@ void yyfree (void * ptr , yyscan_t yyscanner)
 
 #define YYTABLES_NAME "yytables"
 
-#line 92 "../parse/flex.l"
+#line 94 "../parse/flex.l"
 
 
 int hash(const void *key, size_t keylen)

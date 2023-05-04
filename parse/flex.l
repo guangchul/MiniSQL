@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "../node/parseNodes.h"
-#include "../util/meme.h"
+#include "../util/mem.h"
 #include "ptype.h"
 #include "bison.h"
 #include "token.h"
@@ -20,6 +20,8 @@ int scanKeywordLookup();
 
 %option reentrant
 %option bison-bridge
+%option noinput
+%option nounput
 
 ident_start		[A-Za-z\200-\377_]
 ident_cont		[A-Za-z\200-\377_0-9\$]
