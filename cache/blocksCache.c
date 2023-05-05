@@ -80,3 +80,15 @@ int getFreeTempBufferBlockNo() {
 void freeTempBufferBlock(int blockNo) {
 	usingTempBufferBlocks[blockNo] = 0;
 }
+
+void flushFile(Relation* relation) {
+	List* list = getPageBlocks(relation->fileNode);
+	ListNode* listNode;
+	int i = 0;
+	foreach(listNode, list) {
+		int blockNo = listNode->value.int_val;
+		char* page = (char*) (BufferBlocks + (BUFFERS_SIZE * blockNo));
+		fileWrite(relation->fileNode->fd, page, i * BUFFERS_SIZE, BUFFERS_SIZE);
+		i++;
+	}
+}

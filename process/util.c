@@ -37,7 +37,9 @@ DB_Table* getTableInfo(char* schema, char* tableName, char* alias) {//todo refre
 	key[strlen(schema) + 1 + strlen(tableName) + 1] = 0;
 	void* val = getFromHashMap(TABLE_INFO, key);
 	if(val != (void*)0){
-		return (DB_Table*)val;
+		DB_Table* table = (DB_Table*)val;
+		table->alias = alias == (void*)0 ? tableName : alias;
+		return table;
 	}
 	FileNode* fileNode = malloc_local(sizeof(FileNode));
 	fileNode->schema = schema;

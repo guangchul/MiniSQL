@@ -27,5 +27,6 @@ extern int getFreePageBlock(Relation* relation);
 extern void blockWriteToFile(Relation* relation, int blockNo, int offset);
 extern int getFreeTempBufferBlockNo();
 extern void freeTempBufferBlock(int blockNo);
+extern void flushFile(Relation* relation);
 
 #endif /* CACHE_H_ */

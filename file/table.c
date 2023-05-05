@@ -126,3 +126,67 @@ int insert(Relation* relation) {
 	return 0;
 }
 
+void updateOriginTuple(Relation* relation, HeapTupleHeaderData* originTuple, int tupleLen, char* buffer, int bufferLen){
+	List* list = getPageBlocks(relation->fileNode);
+	int pageNo = originTuple->item_desc.page_hi << 16 | originTuple->item_desc.page_low;
+	int posId = originTuple->item_desc.pos_id;
+	int pageId = listGet_int(list, pageNo);
+	char* page = BufferBlocks + (pageId * BUFFERS_SIZE);
+	PageHeaderData* pageHeaderData = (PageHeaderData*)page;
+	ItemIdData itemIdData = pageHeaderData->tuple_desc[posId];
+	memset(page + itemIdData.lp_off + 23, 0, itemIdData.lp_len - 23);
+	memcpy(page + itemIdData.lp_off + 23, buffer, bufferLen);
+	itemIdData.lp_len = 23 + bufferLen;
+	memcpy(page + 28 + (posId * 4), &itemIdData, 4);
+}
+
+void updateNewTuple(Relation* relation, HeapTupleHeaderData* originTuple, int tupleLen, int attrCount, char* buffer, int bufferLen, unsigned short flag_bits) {
+	int block = getFreePageBlock(relation);
+	PageHeaderData* pageHeaderData = (PageHeaderData*) (BufferBlocks + (block * BUFFERS_SIZE));
+	int endOfFreeSpace = (pageHeaderData->end_of_free_space - (bufferLen + 23)) / 8 * 8;
+	int startOfFreeSpace = pageHeaderData->start_of_free_space + 4;
+	int freeSpaceCount = endOfFreeSpace - startOfFreeSpace;
+	int pageNo = pageHeaderData->page_no;
+	int posId = 0;
+	if(freeSpaceCount >= 0) {
+		HeapTupleHeaderData* heapTupleHeaderData = malloc_local(sizeof(HeapTupleHeaderData) + bufferLen);
+		heapTupleHeaderData->un_distributed_01.un_distributed_uint96_01 = 0;
+		heapTupleHeaderData->un_distributed_01.un_distributed_uint96_02 = 0;
+		heapTupleHeaderData->un_distributed_01.un_distributed_uint96_03 = 0;
+		heapTupleHeaderData->offset_of_data = 23 + ((attrCount - 1) / 8 + 1) ;
+		heapTupleHeaderData->flag_bits = flag_bits;
+		heapTupleHeaderData->attrs_count = attrCount | 0x8000;
+		heapTupleHeaderData->item_desc.page_hi = pageHeaderData->page_no >> 16;
+		heapTupleHeaderData->item_desc.page_low = pageHeaderData->page_no & 0xFFFF;
+		heapTupleHeaderData->item_desc.pos_id = (pageHeaderData->start_of_free_space - 28) / 4;
+		memcpy(heapTupleHeaderData->bits, buffer, bufferLen);
+		char* page = (char*)(BufferBlocks + (BUFFERS_SIZE * block));
+		memcpy(page + endOfFreeSpace, heapTupleHeaderData, 23 + bufferLen);
+		ItemIdData* itemData = malloc_local(sizeof(ItemIdData));
+		itemData->lp_flag = 1;
+		itemData->lp_len = 23 + bufferLen;
+		itemData->lp_off = endOfFreeSpace;
+		posId = (pageHeaderData->start_of_free_space - 28) / 4;
+		memcpy(page + pageHeaderData->start_of_free_space, itemData, sizeof(ItemIdData));
+		pageHeaderData->start_of_free_space = startOfFreeSpace;
+		pageHeaderData->end_of_free_space = endOfFreeSpace;
+		memcpy(page, pageHeaderData, sizeof(PageHeaderData));
+		free(itemData);
+		free(heapTupleHeaderData);
+	} else {
+
+	}
+	List* list = getPageBlocks(relation->fileNode);
+	int _pageNo = originTuple->item_desc.page_hi << 16 | originTuple->item_desc.page_low;
+	int _posId = originTuple->item_desc.pos_id;
+	int _pageId = listGet_int(list, _pageNo);
+	char* _page = BufferBlocks + (_pageId * BUFFERS_SIZE);
+	PageHeaderData* _pageHeaderData = (PageHeaderData*)_page;
+	ItemIdData itemIdData = _pageHeaderData->tuple_desc[_posId];
+	HeapTupleHeaderData* heapTupleHeaderData = (HeapTupleHeaderData*)(_page + itemIdData.lp_off);
+	heapTupleHeaderData->item_desc.page_hi = pageNo >> 16;
+	heapTupleHeaderData->item_desc.page_low = pageNo & 0xFFFF;
+	heapTupleHeaderData->item_desc.pos_id = posId;
+	heapTupleHeaderData->attrs_count |= 0x4000;
+}
+

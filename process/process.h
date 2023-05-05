@@ -26,5 +26,8 @@ extern char* getVal(HeapTupleHeaderData* tuple, DB_Columns_Set* columnsSet, int 
 extern char* getFieldVal(Slot* slot, Field field);
 extern List* analyzeUpdateStmt(UpdateStmt* node, char* schema);
 extern void runUpdateStmt(UpdateStmt* node, List* relationList);
+extern DB_Columns_Set* makeSlotColumnsSet(List* relationList);
+extern void makeSlot(ListNode* listNode, Slot* slot, List* whereClause, int* isOut);
+extern int fileter(Slot* slot, List* whereClause);
 
 #endif /* PROCESS_H_ */

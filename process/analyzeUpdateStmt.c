@@ -21,6 +21,9 @@ int checkColumns(UpdateValue* updateValue, DB_Columns_Set* columnsSet) {
 }
 
 void checkUpdateWhereClause(List* whereClause, char* alias) {
+	if(whereClause == (void*)0) {
+		return;
+	}
 	ListNode* listNode;
 	foreach(listNode, whereClause) {
 		WhereCondition* whereCondition = (WhereCondition*)listNode->value.ptr_val;
@@ -40,7 +43,6 @@ List* analyzeUpdateStmt(UpdateStmt* node, char* schema) {
 	Relation* relation = malloc_local(sizeof(Relation));
 	DB_Table* tableInfo = getTableInfo(schema, node->fromClause->name, node->fromClause->alias);
 	DB_Columns_Set* columnsSet = getColumnsSet(schema, tableInfo);
-	FieldNodes* fieldNodes = remakeFieldNodes((void*)0, columnsSet, tableInfo->alias, tableInfo->name);
 	List* updateValueList = node->updateValueList;
 	ListNode* listNode;
 	foreach(listNode, updateValueList) {

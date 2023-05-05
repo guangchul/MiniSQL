@@ -67,6 +67,25 @@ int matchCondition(int result, int condition, int _result) {
 	return 1;
 }
 
+HeapTupleHeaderData* getTupleRecursion(Relation* relation, HeapTupleHeaderData* tuple) {
+	if((tuple->attrs_count & 0x4000) > 0) {
+		int pageNo = tuple->item_desc.page_hi << 16 | tuple->item_desc.page_low;
+		int posId = tuple->item_desc.pos_id;
+		List* list = getPageBlocks(relation->fileNode);
+		int blockNo = listGet_int(list, pageNo);
+		char* page = BufferBlocks + (blockNo * BUFFERS_SIZE);
+		PageHeaderData* pageHeaderData = (PageHeaderData*)page;
+		ItemIdData itemIdData = pageHeaderData->tuple_desc[posId];
+		HeapTupleHeaderData* _tuple = (HeapTupleHeaderData*)(page + itemIdData.lp_off);
+		return getTupleRecursion(relation, _tuple);
+	} else if ((tuple->attrs_count & 0x8000) > 0) {
+		return tuple;
+	} else if((tuple->attrs_count & 0x2000) > 0) {
+		return (void*) 0;
+	}
+	return (void*)0;
+}
+
 //return 0 is not match, 1 is match.
 int compare(HeapTupleHeaderData* tuple, unsigned int len, List* whereClause, char* tableAlias, DB_Columns_Set* columnsSet) {
 	if(whereClause == (void*)0) {
@@ -235,7 +254,26 @@ void readBlock(Relation* relation, Slot* slot, List* whereClause) {
 			}
 			ItemIdData itemIdData = pageHeaderData->tuple_desc[extend->nextItemPos];
 			HeapTupleHeaderData* tuple = (HeapTupleHeaderData*)(page + itemIdData.lp_off);
-			int result = compare(tuple, itemIdData.lp_len, whereClause, relation->tableInfo->alias, relation->columnsSet);
+			int result = 0;
+			if((tuple->attrs_count & 0x8000) > 0 || (tuple->attrs_count & 0x2000) > 0) {
+				result = -1;
+			}
+			if((tuple->attrs_count & 0x4000) > 0){
+				tuple = getTupleRecursion(relation, tuple);
+				int pageNo = tuple->item_desc.page_hi << 16 | tuple->item_desc.page_low;
+				int posId = tuple->item_desc.pos_id;
+				List* list = getPageBlocks(relation->fileNode);
+				int blockNo = listGet_int(list, pageNo);
+				char* page = BufferBlocks + (blockNo * BUFFERS_SIZE);
+				PageHeaderData* pageHeaderData = (PageHeaderData*)page;
+				itemIdData = pageHeaderData->tuple_desc[posId];
+				if(tuple == (void*)0) {
+					result = -1;
+				}
+			}
+			if(result == 0) {
+				result = compare(tuple, itemIdData.lp_len, whereClause, relation->tableInfo->alias, relation->columnsSet);
+			}
 			if(result == 1) {
 				if(extend->isOuter == 0) {
 					writeToTempBufferBlocks(extend, tuple, itemIdData.lp_len);
@@ -393,11 +431,11 @@ void runSelectStmt(SelectStmt* node, List* relationList){
 	*isOut = 1;
 	for(;;) {
 		makeSlot(relationList->node, slot, node->whereClause, isOut);
+		if(slot->tuple != (void*)0 && fileter(slot, node->whereClause) == 1){
+			writeResult(slot, node);
+		}
 		if(slot->end == 1) {
 			break;
-		}
-		if(fileter(slot, node->whereClause) == 1){
-			writeResult(slot, node);
 		}
 	}
 }

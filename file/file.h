@@ -24,5 +24,7 @@ extern int fileWrite(int fd, char *ptr, off_t offset, size_t size);
 extern void makeFileNode(FileNode* fileNode);
 extern int createTable(FileNode* fileNode, PageHeaderData* pageHeaderData);
 extern int insert(Relation* relation);
+extern void updateOriginTuple(Relation* relation, HeapTupleHeaderData* originTuple, int tupleLen, char* buffer, int bufferLen);
+extern void updateNewTuple(Relation* relation, HeapTupleHeaderData* originTuple, int tupleLen, int attrCount, char* buffer, int bufferLen, unsigned short flag_bits);
 
 #endif /* FILE_H_ */
