@@ -28,18 +28,18 @@ int match(char* left, char* op, char* right) {
 	return 0;
 }
 
-char* getValFromTuple(HeapTupleHeaderData* tuple, char* field, FieldNodes* fieldNodes) {
+char* getValFromTuple(HeapTupleHeaderData* tuple, char* field, DB_Columns_Set* columnsSet) {
 	int i = 0;
-	for( ;i < fieldNodes->length; i++) {
-		FieldNode* fieldNode = fieldNodes->fieldNode[i];
-		if(strcmp(field, fieldNode->fieldName) == 0) {
+	for( ;i < columnsSet->count; i++) {
+		DB_Columns* columns = columnsSet->columns[i];
+		if(strcmp(field, columns->fieldName) == 0) {
 			break;
 		}
 	}
-	return getVal(tuple, fieldNodes, i);
+	return getVal(tuple, columnsSet, i);
 }
 
-int compareConditionSingle(HeapTupleHeaderData* tuple, unsigned int len, WhereSingle* whereSingle, char* tableAlias, FieldNodes* fieldNodes) {
+int compareConditionSingle(HeapTupleHeaderData* tuple, unsigned int len, WhereSingle* whereSingle, char* tableAlias, DB_Columns_Set* columnsSet) {
 	int isVal = whereSingle->left.isVal;
 	if(isVal == 1) {
 		return match(whereSingle->left.val, whereSingle->op, whereSingle->right.val);
@@ -51,7 +51,7 @@ int compareConditionSingle(HeapTupleHeaderData* tuple, unsigned int len, WhereSi
 				return 1;
 			}
 			char* field = whereSingle->left.field;
-			char* val = getValFromTuple(tuple, field, fieldNodes);
+			char* val = getValFromTuple(tuple, field, columnsSet);
 			return match(val, whereSingle->op, whereSingle->right.val);
 		}
 	}
@@ -68,7 +68,7 @@ int matchCondition(int result, int condition, int _result) {
 }
 
 //return 0 is not match, 1 is match.
-int compare(HeapTupleHeaderData* tuple, unsigned int len, List* whereClause, char* tableAlias, FieldNodes* fieldNodes) {
+int compare(HeapTupleHeaderData* tuple, unsigned int len, List* whereClause, char* tableAlias, DB_Columns_Set* columnsSet) {
 	if(whereClause == (void*)0) {
 		return 1;
 	}
@@ -80,13 +80,13 @@ int compare(HeapTupleHeaderData* tuple, unsigned int len, List* whereClause, cha
 	foreach(listNode, whereClause) {
 		WhereCondition* whereCondition = (WhereCondition*)listNode->value.ptr_val;
 		if(whereCondition->isList == 1) {
-			int _result = compare(tuple, len, whereCondition->list, tableAlias, fieldNodes);
+			int _result = compare(tuple, len, whereCondition->list, tableAlias, columnsSet);
 			result = matchCondition(result, whereCondition->condition, _result);
 		} else {
 			if(whereCondition->whereSingle == (void*)0) {
 				return result;
 			}
-			int _result = compareConditionSingle(tuple, len, whereCondition->whereSingle, tableAlias, fieldNodes);
+			int _result = compareConditionSingle(tuple, len, whereCondition->whereSingle, tableAlias, columnsSet);
 			result = matchCondition(result, whereCondition->condition, _result);
 		}
 	}
@@ -235,7 +235,7 @@ void readBlock(Relation* relation, Slot* slot, List* whereClause) {
 			}
 			ItemIdData itemIdData = pageHeaderData->tuple_desc[extend->nextItemPos];
 			HeapTupleHeaderData* tuple = (HeapTupleHeaderData*)(page + itemIdData.lp_off);
-			int result = compare(tuple, itemIdData.lp_len, whereClause, relation->tableInfo->alias, relation->fieldNodes);
+			int result = compare(tuple, itemIdData.lp_len, whereClause, relation->tableInfo->alias, relation->columnsSet);
 			if(result == 1) {
 				if(extend->isOuter == 0) {
 					writeToTempBufferBlocks(extend, tuple, itemIdData.lp_len);
@@ -312,33 +312,33 @@ void makeSlot(ListNode* listNode, Slot* slot, List* whereClause, int* isOut) {
 	}
 }
 
-FieldNodes* makeSlotFieldNodes(List* relationList) {
+DB_Columns_Set* makeSlotColumnsSet(List* relationList) {
 	List* tempList = makeList();
 	ListNode* listNode;
 	foreach(listNode, relationList) {
 		Relation* relation = (Relation*)listNode->value.ptr_val;
 		DB_Columns_Set* colSet = relation->columnsSet;
 		for(int i = 0; i < colSet->count; i++) {
-			FieldNode* fieldNode = malloc_local(sizeof(FieldNode));
-			fieldNode->alias = relation->tableInfo->alias;
-			fieldNode->id = colSet->columns[i]->id;
-			fieldNode->fieldName = colSet->columns[i]->fieldName;
-			fieldNode->flag = colSet->columns[i]->flag;
-			fieldNode->length = colSet->columns[i]->length;
-			listAppend(tempList, fieldNode);
+			DB_Columns* columns = malloc_local(sizeof(FieldNode));
+			columns->tableInfo = relation->tableInfo;
+			columns->id = colSet->columns[i]->id;
+			columns->fieldName = colSet->columns[i]->fieldName;
+			columns->flag = colSet->columns[i]->flag;
+			columns->length = colSet->columns[i]->length;
+			listAppend(tempList, columns);
 		}
 	}
-	FieldNodes* fieldNodes = malloc_local(sizeof(FieldNodes) + (sizeof(FieldNode*) * tempList->length));
-	fieldNodes->length = tempList->length;
+	DB_Columns_Set* columnsSet = malloc_local(sizeof(DB_Columns_Set) + (sizeof(DB_Columns_Set*) * tempList->length));
+	columnsSet->count = tempList->length;
 
 	int idx = 0;
 	foreach(listNode, tempList) {
-		FieldNode* fieldNode = (FieldNode*)listNode->value.ptr_val;
-		fieldNodes->fieldNode[idx] = fieldNode;
+		DB_Columns* columns = (DB_Columns*)listNode->value.ptr_val;
+		columnsSet->columns[idx] = columns;
 		idx++;
 	}
 	freeList(tempList);
-	return fieldNodes;
+	return columnsSet;
 }
 
 int fileterConditionSingle(Slot* slot, WhereSingle* whereSingle) {
@@ -383,8 +383,8 @@ int fileter(Slot* slot, List* whereClause) {
 
 void runSelectStmt(SelectStmt* node, List* relationList){
 	Slot* slot = malloc_local(sizeof(Slot));
-	FieldNodes* fieldNodes = makeSlotFieldNodes(relationList);
-	slot->fieldNodes = fieldNodes;
+	DB_Columns_Set* columnsSet = makeSlotColumnsSet(relationList);
+	slot->columnsSet = columnsSet;
 	slot->tuple_len = 0;
 	slot->tuple = (void*)0;
 	slot->end = 0;

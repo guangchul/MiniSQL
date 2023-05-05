@@ -42,10 +42,11 @@ int createTable(FileNode* fileNode, PageHeaderData* pageHeaderData){
 
 int insert(Relation* relation) {
 	char buffer[BUFFERS_SIZE];
-	FieldValuesList* fieldValuesList = relation->fieldValuesList;
-	FieldNodes* fieldNodes = relation->fieldNodes;
+	InsertRelationExtend* extend = (InsertRelationExtend*)relation->ext;
+	FieldValuesList* fieldValuesList = extend->fieldValuesList;
+	FieldNodes* fieldNodes = extend->fieldNodes;
 	for(int i = 0; i < fieldValuesList->length; i++){
-		FieldValues* fieldValues = relation->fieldValuesList->fieldValues[i];
+		FieldValues* fieldValues = extend->fieldValuesList->fieldValues[i];
 		int bitCount = (fieldValues->length - 1) / 8 + 1;
 		char bits[bitCount];
 		memset(bits, 0, bitCount);
@@ -91,9 +92,6 @@ int insert(Relation* relation) {
 		heapTupleHeaderData->un_distributed_01.un_distributed_uint96_01 = 0;
 		heapTupleHeaderData->un_distributed_01.un_distributed_uint96_02 = 0;
 		heapTupleHeaderData->un_distributed_01.un_distributed_uint96_03 = 0;
-		heapTupleHeaderData->item_desc.page_hi = 0;
-		heapTupleHeaderData->item_desc.page_low = 0;
-		heapTupleHeaderData->item_desc.pos_id = 0;
 		heapTupleHeaderData->offset_of_data = 23 + bitCount;
 		heapTupleHeaderData->flag_bits = flag_bits;
 		heapTupleHeaderData->attrs_count = attrs_count;
@@ -102,6 +100,9 @@ int insert(Relation* relation) {
 		int dataSize = 23 + bitCount + bufferOffset;
 		int block = getFreePageBlock(relation);
 		PageHeaderData* pageHeaderData = (PageHeaderData*) (BufferBlocks + (block * BUFFERS_SIZE));
+		heapTupleHeaderData->item_desc.page_hi = pageHeaderData->page_no >> 16;
+		heapTupleHeaderData->item_desc.page_low = pageHeaderData->page_no & 0xFFFF;
+		heapTupleHeaderData->item_desc.pos_id = (pageHeaderData->start_of_free_space - 28) / 4;
 		int endOfFreeSpace = (pageHeaderData->end_of_free_space - dataSize) / 8 * 8;
 		int startOfFreeSpace = pageHeaderData->start_of_free_space + 4;
 		if(startOfFreeSpace > endOfFreeSpace) {

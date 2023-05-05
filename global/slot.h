@@ -12,7 +12,7 @@
 #include "page.h"
 
 typedef struct Slot{
-	FieldNodes* fieldNodes;
+	DB_Columns_Set* columnsSet;
 	unsigned int tuple_len;
 	HeapTupleHeaderData* tuple;
 	int end; // 1 is end, 0 is not

@@ -199,7 +199,6 @@ UpdateStmt: UPDATE ColId SET update_value_list update_where_clause
 		UpdateStmt* updateStmt = (UpdateStmt*)makeNode(UpdateStmt);
 		FromClause* fromClause = (FromClause*)makeNode(FromClause);
 		fromClause->name = $2;
-		fromClause->alias = $2;
 		updateStmt->fromClause = fromClause;
 		updateStmt->updateValueList = $4;
 		updateStmt->whereClause = $5;

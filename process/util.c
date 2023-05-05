@@ -125,7 +125,7 @@ DB_Columns_Set* getColumnsSet(char* schema, DB_Table* tableInfo) {//todo refresh
 			if(_tableId == tableId){
 				DB_Columns* columns = malloc_local(sizeof(DB_Columns));
 				columns->id = _id;
-				columns->tableId = _tableId;
+				columns->tableInfo = tableInfo;
 				bits = bits + 4;
 				int _len = *bits >> 1;
 				char* _fieldName = malloc_local(_len);
@@ -145,8 +145,8 @@ DB_Columns_Set* getColumnsSet(char* schema, DB_Table* tableInfo) {//todo refresh
 	return columnsSet;
 }
 
-char* getVal(HeapTupleHeaderData* tuple, FieldNodes* fieldNodes, int i) {
-	char* addr = (char*)(tuple->bits) + (fieldNodes->length / 8) + 1;
+char* getVal(HeapTupleHeaderData* tuple, DB_Columns_Set* columnsSet, int i) {
+	char* addr = (char*)(tuple->bits) + (columnsSet->count / 8) + 1;
 	for(int j = 0; j <= i; j++) {
 		int bitNo = j / 8;
 		int bitIndex = j % 8;
@@ -154,8 +154,8 @@ char* getVal(HeapTupleHeaderData* tuple, FieldNodes* fieldNodes, int i) {
 		if(isNull) {
 			continue;
 		}
-		FieldNode* fieldNode = fieldNodes->fieldNode[j];
-		int flexible = fieldNode->flag & 0x1;
+		DB_Columns* columns = columnsSet->columns[j];
+		int flexible = columns->flag & 0x1;
 		if(flexible == 1) { //flexible
 			int len = addr[0] >> 1;
 			if(j == i) {
@@ -165,9 +165,9 @@ char* getVal(HeapTupleHeaderData* tuple, FieldNodes* fieldNodes, int i) {
 			}
 			addr = addr + len;
 		} else {
-			int len = fieldNode->length;
+			int len = columns->length;
 			if(j == i) {
-				int type = fieldNode->flag >> 2;
+				int type = columns->flag >> 2;
 				switch(type) {
 					case CHAR:
 					case SHORT:
@@ -192,11 +192,14 @@ char* getVal(HeapTupleHeaderData* tuple, FieldNodes* fieldNodes, int i) {
 
 char* getFieldVal(Slot* slot, Field field) {
 	int i = 0;
-	for(; i < slot->fieldNodes->length; i++) {
-		FieldNode* fieldNode = slot->fieldNodes->fieldNode[i];
-		if(strcmp(fieldNode->alias, field.tableAlias) == 0 && strcmp(fieldNode->fieldName, field.field) == 0) {
+	for(; i < slot->columnsSet->count; i++) {
+		DB_Columns* columns = slot->columnsSet->columns[i];
+		if(field.tableAlias == (void*)0 && strcmp(columns->fieldName, field.field) == 0) {
+			break;
+		}
+		if(field.tableAlias != (void*)0 && strcmp(columns->tableInfo->alias, field.tableAlias) == 0 && strcmp(columns->fieldName, field.field) == 0) {
 			break;
 		}
 	}
-	return getVal(slot->tuple, slot->fieldNodes, i);
+	return getVal(slot->tuple, slot->columnsSet, i);
 }

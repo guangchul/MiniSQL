@@ -22,7 +22,9 @@ extern DB_Columns_Set* getColumnsSet(char* schema, DB_Table* tableInfo);
 extern List* analyzeSelectStmt(SelectStmt* node, char* schema);
 extern void runSelectStmt(SelectStmt* node, List* relationList);
 extern void writeResult(Slot* slot, SelectStmt* node);
-extern char* getVal(HeapTupleHeaderData* tuple, FieldNodes* fieldNodes, int i);
+extern char* getVal(HeapTupleHeaderData* tuple, DB_Columns_Set* columnsSet, int i);
 extern char* getFieldVal(Slot* slot, Field field);
+extern List* analyzeUpdateStmt(UpdateStmt* node, char* schema);
+extern void runUpdateStmt(UpdateStmt* node, List* relationList);
 
 #endif /* PROCESS_H_ */

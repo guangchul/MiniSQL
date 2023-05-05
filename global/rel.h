@@ -35,10 +35,10 @@ typedef struct DB_Table{
 
 typedef struct DB_Columns{
 	unsigned int id;
-	unsigned int tableId;
 	char* fieldName;
 	unsigned int length;
 	unsigned char flag;
+	DB_Table* tableInfo;
 } DB_Columns;
 
 typedef struct DB_Columns_Set{
@@ -97,6 +97,7 @@ typedef struct FieldValuesList{
 
 typedef enum ExtendType{
 	T_Select,
+	T_Insert,
 } ExtendType;
 
 typedef struct SelectRelationExtend{
@@ -115,6 +116,12 @@ typedef struct SelectRelationExtend{
 	int jump; // 1 is jump; 0 is not;
 } SelectRelationExtend;
 
+typedef struct InsertRelationExtend{
+	ExtendType type;
+	FieldNodes* fieldNodes;
+	FieldValuesList* fieldValuesList;
+}InsertRelationExtend;
+
 typedef struct RelationExtend{
 	ExtendType type;
 } RelationExtend;
@@ -123,8 +130,6 @@ typedef struct Relation{
 	FileNode* fileNode;
 	int indexCount;
 	List* indexList;
-	FieldNodes* fieldNodes;
-	FieldValuesList* fieldValuesList;
 	DB_Table* tableInfo;
 	DB_Columns_Set* columnsSet;
 	RelationExtend* ext;

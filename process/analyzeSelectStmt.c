@@ -126,13 +126,11 @@ void checkWhereClause(List* whereClause, char* alias, char* tableName) {
 List* analyzeSelectStmt(SelectStmt* node, char* schema) {
 	List* relationList = makeList();
 	List* fromClause = node->fromClause;
-	List* optTargetList = node->optTargetList;
 	ListNode* listNode;
 	foreach(listNode, fromClause) {
 		FromClause* fromClause = (FromClause*)listNode->value.ptr_val;
 		DB_Table* tableInfo = getTableInfo(schema, fromClause->name, fromClause->alias);
 		DB_Columns_Set* columnsSet = getColumnsSet(schema, tableInfo);
-		FieldNodes* fieldNodes = remakeFieldNodes(optTargetList, columnsSet, fromClause->alias, fromClause->name);
 		//todo index stuff
 
 		checkWhereClause(node->whereClause, fromClause->alias, fromClause->name);
@@ -144,7 +142,6 @@ List* analyzeSelectStmt(SelectStmt* node, char* schema) {
 
 		Relation* relation = malloc_local(sizeof(Relation));
 		relation->fileNode = fileNode;
-		relation->fieldNodes = fieldNodes;
 		relation->tableInfo = tableInfo;
 		relation->columnsSet = columnsSet;
 

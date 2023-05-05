@@ -51,7 +51,7 @@ typedef struct ItemDesc {
 typedef struct HeapTupleHeaderData{
 	uint96 un_distributed_01; //offset 0
 	ItemDesc item_desc; //offset 12
-	uint16 attrs_count; //offset 18 attrs_count = attrs_count & 0x7ff; attr_count & 0x4000 == 0x4000 is updated; attr_count & 0x2000 == 0x2000 is deleted.
+	uint16 attrs_count; //offset 18 attrs_count = attrs_count & 0x7ff; attr_count & 0x4000 == 0x4000 is updated; attr_count & 0x2000 == 0x2000 is deleted; attr_count & 0x8000 = 0x8000 is re-direction data.
 	uint16 flag_bits; //offset 20 when (flag_bits & 0x01) == 0x01 then nullable
 	uint8 offset_of_data; //offset 22
 	uint8 bits[]; //offset 23

@@ -35,8 +35,11 @@ List* analyzeCreateStmt(CreateStmt* node, char* schema){
 	};
 	FieldValuesList* tableFieldValuesList = makeFieldValuesList(tableFieldNodes, (char**)tables_into_columns, (char***)tabels_into_values, 5, 1);
 	free(fileName);
-	tableRelation->fieldNodes = tableFieldNodes;
-	tableRelation->fieldValuesList = tableFieldValuesList;
+	InsertRelationExtend* tableExtend = (InsertRelationExtend*)malloc_local(sizeof(InsertRelationExtend));
+	tableExtend->type = T_Insert;
+	tableExtend->fieldNodes = tableFieldNodes;
+	tableExtend->fieldValuesList = tableFieldValuesList;
+	tableRelation->ext = (RelationExtend*)tableExtend;
 	listAppend(list, tableRelation);
 
 	FileNode* columnsFileNode = (FileNode*)malloc_local(sizeof(FileNode));
@@ -60,9 +63,11 @@ List* analyzeCreateStmt(CreateStmt* node, char* schema){
 		idx++;
 	}
 	FieldValuesList* columnsFieldValuesList = makeFieldValuesList(columnsFieldNodes, (char**)columns_into_columns, (char***)columns_into_values, 5, node->tableElementList->length);
-
-	columnsRelation->fieldNodes = columnsFieldNodes;
-	columnsRelation->fieldValuesList = columnsFieldValuesList;
+	InsertRelationExtend* columnsExtend = (InsertRelationExtend*)malloc_local(sizeof(InsertRelationExtend));
+	columnsExtend->type = T_Insert;
+	columnsExtend->fieldNodes = columnsFieldNodes;
+	columnsExtend->fieldValuesList = columnsFieldValuesList;
+	columnsRelation->ext = (RelationExtend*)columnsExtend;
 	listAppend(list, columnsRelation);
 
 	return list;
@@ -115,8 +120,11 @@ List* analyzeInsertStmt(InsertStmt* node, char* schema) {
 	FieldValuesList* fieldValuesList = makeFieldValuesList(fieldNodes, intoColumns, intoValues, node->columnsList->length, node->valuesList->length);
 	Relation* relation = malloc_local(sizeof(Relation));
 	relation->fileNode = fileNode;
-	relation->fieldNodes = fieldNodes;
-	relation->fieldValuesList = fieldValuesList;
+	InsertRelationExtend* extend = (InsertRelationExtend*)malloc_local(sizeof(InsertRelationExtend));
+	extend->type = T_Insert;
+	extend->fieldNodes = fieldNodes;
+	extend->fieldValuesList = fieldValuesList;
+	relation->ext = (RelationExtend*)extend;
 	List* list = makeList();
 	listAppend(list, relation);
 	return list;
@@ -134,6 +142,9 @@ List* analyze(Node* node, char* schema) {
 			break;
 		case T_SelectStmt:
 			list = analyzeSelectStmt((SelectStmt*)node, schema);
+			break;
+		case T_UpdateStmt:
+			list = analyzeUpdateStmt((UpdateStmt*)node, schema);
 			break;
 		default:
 			break;

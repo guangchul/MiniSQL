@@ -6,32 +6,33 @@
  */
 #include "column.h"
 
-DB_Columns columns[25] = {
-		{1, 1, "id", 4, 12},
-		{2, 1, "name", 64, 17},
-		{3, 1, "fileName", 64, 17},
-		{4, 1, "columnCount", 4, 12},
-		{5, 1, "indexCount", 4, 12},
-		{6, 2, "id", 4, 12},
-		{7, 2, "tableId", 4, 12},
-		{8, 2, "fieldName", 64, 17},
-		{9, 2, "length", 4, 12},
-		{10, 2, "flag", 4, 12},
-		{11, 3, "id", 4, 12},
-		{12, 3, "tableId", 4, 12},
-		{13, 3, "indexName", 64, 17},
-		{14, 3, "indexFileName", 64, 17},
-		{15, 3, "columnsCount", 4, 12},
-		{16, 3, "columnIds", 64, 17},
-		{17, 0, "id", 4, 12},
-		{18, 0, "perm", 4, 12},
-		{19, 0, "name", 64, 17},
-		{20, 4, "id", 4, 12},
-		{21, 4, "tableId", 4,12},
-		{22, 4, "indexName", 64, 17},
-		{23, 4, "indexFileName", 64, 17},
-		{24, 4, "columnsCount", 4, 12},
-		{25, 4, "columnIds", 256, 17}
+DB_Table table[4] = {
+		{1, "tables", "tables", "tables.tb", 5, 2},
+		{2, "columns", "columns", "columns.tb", 5, 0},
+		{3, "indices", "indices", "indices.tb", 6, 0},
+		{0, "schema", "schema", "schema", 3, 0}
+};
+
+DB_Columns columns[19] = {
+		{1, "id", 4, 12, &table[0]},
+		{2, "name", 64, 17, &table[0]},
+		{3, "fileName", 64, 17, &table[0]},
+		{4, "columnCount", 4, 12, &table[0]},
+		{5, "indexCount", 4, 12, &table[0]},
+		{6, "id", 4, 12, &table[1]},
+		{7, "tableId", 4, 12, &table[1]},
+		{8, "fieldName", 64, 17, &table[1]},
+		{9, "length", 4, 12, &table[1]},
+		{10, "flag", 4, 12, &table[1]},
+		{11, "id", 4, 12, &table[2]},
+		{12, "tableId", 4, 12, &table[2]},
+		{13, "indexName", 64, 17, &table[2]},
+		{14, "indexFileName", 64, 17, &table[2]},
+		{15, "columnsCount", 4, 12, &table[2]},
+		{16, "columnIds", 64, 17, &table[2]},
+		{17, "id", 4, 12, &table[3]},
+		{18, "perm", 4, 12, &table[3]},
+		{19, "name", 64, 17, &table[3]}
 };
 
 char* tables_into_columns[5] = {

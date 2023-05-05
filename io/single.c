@@ -39,11 +39,11 @@ void writeSingle(Slot* slot, SelectStmt* node) {
 	if(node->optTargetList->length == 1) {
 		OptTarget* optTarget = (OptTarget*)listGet(node->optTargetList, 0);
 		if(optTarget->isAll) {
-			FieldNodes* fieldNodes = slot->fieldNodes;
-			for(int i = 0; i < fieldNodes->length; i++) {
+			DB_Columns_Set* columnsSet = slot->columnsSet;
+			for(int i = 0; i < columnsSet->count; i++) {
 				Field field;
-				field.tableAlias = slot->fieldNodes->fieldNode[i]->alias;
-				field.field = slot->fieldNodes->fieldNode[i]->fieldName;
+				field.tableAlias = slot->columnsSet->columns[i]->tableInfo->alias;
+				field.field = slot->columnsSet->columns[i]->fieldName;
 				char* val = getFieldVal(slot, field);
 				printf("%10s", val);
 			}

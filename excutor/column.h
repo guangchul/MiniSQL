@@ -10,7 +10,7 @@
 
 #include "../global/rel.h"
 
-extern DB_Columns columns[25];
+extern DB_Columns columns[19];
 extern char* tables_into_columns[5];
 extern char* columns_into_columns[5];
 extern char* indices_into_columns[6];
