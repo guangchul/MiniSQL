@@ -146,6 +146,9 @@ List* analyze(Node* node, char* schema) {
 		case T_UpdateStmt:
 			list = analyzeUpdateStmt((UpdateStmt*)node, schema);
 			break;
+		case T_DeleteStmt:
+			list = analyzeDeleteStmt((DeleteStmt*)node, schema);
+			break;
 		default:
 			break;
 	}

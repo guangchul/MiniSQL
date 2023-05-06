@@ -19,7 +19,7 @@ int getChar() {
 }
 
 void readSingleCommand(String* command) {
-	printf("sql>");
+	printf("sql> ");
 	fflush(stdout);
 	int c;
 	while((c = getChar()) != -1) {

@@ -539,8 +539,9 @@ union YYSTYPE
 	SelectStmt			*selectStmt;
 	WhereSingle			*whereSingle;
 	UpdateStmt			*updateStmt;
+	DeleteStmt			*deleteStmt;
 
-#line 544 "../parse/bison.h"
+#line 545 "../parse/bison.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

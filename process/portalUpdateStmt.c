@@ -102,5 +102,5 @@ void runUpdateStmt(UpdateStmt* node, List* relationList){
 			break;
 		}
 	}
-	flushFile((Relation*)relationList->node->value.ptr_val);
+	flushTable((Relation*)relationList->node->value.ptr_val);
 }

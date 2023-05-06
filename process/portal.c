@@ -56,6 +56,9 @@ void portalRun(Node* node, List* relationList, char* processSchema){
 		case T_UpdateStmt:
 			runUpdateStmt((UpdateStmt*)node, relationList);
 			break;
+		case T_DeleteStmt:
+			runDeleteStmt((DeleteStmt*)node, relationList);
+			break;
 		default:
 			break;
 	}

@@ -190,3 +190,15 @@ void updateNewTuple(Relation* relation, HeapTupleHeaderData* originTuple, int tu
 	heapTupleHeaderData->attrs_count |= 0x4000;
 }
 
+void deleteTuple(Relation* relation, HeapTupleHeaderData* tuple) {
+	List* list = getPageBlocks(relation->fileNode);
+	int pageNo = tuple->item_desc.page_hi << 16 | tuple->item_desc.page_low;
+	int posId = tuple->item_desc.pos_id;
+	int pageId = listGet_int(list, pageNo);
+	char* page = BufferBlocks + (pageId * BUFFERS_SIZE);
+	PageHeaderData* pageHeaderData = (PageHeaderData*)page;
+	ItemIdData itemIdData = pageHeaderData->tuple_desc[posId];
+	HeapTupleHeaderData* heapTupleHeaderData = (HeapTupleHeaderData*)(page + itemIdData.lp_off);
+	heapTupleHeaderData->attrs_count |= 0x2000;
+}
+

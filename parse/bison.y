@@ -32,6 +32,7 @@ extern int yylex (YYSTYPE * yylval_param , yyscan_t yyscanner);
 	SelectStmt			*selectStmt;
 	WhereSingle			*whereSingle;
 	UpdateStmt			*updateStmt;
+	DeleteStmt			*deleteStmt;
 }
 
 %type <ival> TypeName Iconst Nullable
@@ -41,7 +42,7 @@ extern int yylex (YYSTYPE * yylval_param , yyscan_t yyscanner);
 %type <str> ColId singleValue condition_op
 %type <keyword> unreserved_keyword
 %type <keyword> col_name_keyword reserved_keyword 
-%type <list> TableElementList identList columnsList opt_target_list from_list from_clause where_list where_clause update_where_clause simple_where_list
+%type <list> TableElementList identList columnsList opt_target_list from_list from_clause where_list where_clause update_where_clause simple_where_list delete_where_clause
 %type <node> stmt
 %type <list> multi multiValue valuesList update_value_list
 %type <insertStmt> InsertStmt
@@ -49,6 +50,7 @@ extern int yylex (YYSTYPE * yylval_param , yyscan_t yyscanner);
 %type <selectStmt> SelectStmt
 %type <whereSingle> where_single simple_where_single
 %type <updateStmt> UpdateStmt
+%type <deleteStmt> DeleteStmt
 
 
 %token <str>	IDENT FCONST SCONST BCONST XCONST Op
@@ -191,7 +193,19 @@ stmt:CreateStmt {$$ = (Node*)$1;}
 	|InsertStmt {$$ = (Node*)$1;}
 	|SelectStmt {$$ = (Node*)$1;}
 	|UpdateStmt {$$ = (Node*)$1;}
+	|DeleteStmt {$$ = (Node*)$1;}
 	| {$$ = (void*)0;}
+	;
+	
+DeleteStmt: DELETE_P FROM ColId delete_where_clause
+	{
+		DeleteStmt* deleteStmt = (DeleteStmt*)makeNode(DeleteStmt);
+		FromClause* fromClause = (FromClause*)makeNode(FromClause);
+		fromClause->name = $3;
+		deleteStmt->fromClause = fromClause;
+		deleteStmt->whereClause = $4;
+		$$ = deleteStmt;
+	}
 	;
 	
 UpdateStmt: UPDATE ColId SET update_value_list update_where_clause
@@ -224,6 +238,10 @@ update_value_list: ColId '=' singleValue
 		lappend($1, updateValue);
 		$$ = $1;
 	}
+	;
+	
+delete_where_clause: WHERE simple_where_list {$$ = $2;}
+	| {$$ = (void*)0;}
 	;
 	
 update_where_clause: WHERE simple_where_list {$$ = $2;}

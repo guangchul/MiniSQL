@@ -81,7 +81,7 @@ void freeTempBufferBlock(int blockNo) {
 	usingTempBufferBlocks[blockNo] = 0;
 }
 
-void flushFile(Relation* relation) {
+void flushTable(Relation* relation) {
 	List* list = getPageBlocks(relation->fileNode);
 	ListNode* listNode;
 	int i = 0;

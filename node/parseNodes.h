@@ -22,6 +22,7 @@ typedef enum NodeTag{
 	T_WhereCondition,
 	T_UpdateStmt,
 	T_UpdateValue,
+	T_DeleteStmt,
 } NodeTag;
 
 typedef struct Node{
@@ -109,6 +110,12 @@ typedef struct UpdateStmt{
 	FromClause* fromClause;
 	List* whereClause;
 } UpdateStmt;
+
+typedef struct DeleteStmt{
+	NodeTag type;
+	FromClause* fromClause;
+	List * whereClause;
+} DeleteStmt;
 
 #define makeNode(NodeTag) newNode(sizeof(NodeTag), T_##NodeTag)
 

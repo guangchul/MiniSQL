@@ -29,5 +29,8 @@ extern void runUpdateStmt(UpdateStmt* node, List* relationList);
 extern DB_Columns_Set* makeSlotColumnsSet(List* relationList);
 extern void makeSlot(ListNode* listNode, Slot* slot, List* whereClause, int* isOut);
 extern int fileter(Slot* slot, List* whereClause);
+extern List* analyzeDeleteStmt(DeleteStmt* node, char* schema);
+extern void checkUpdateWhereClause(List* whereClause, char* alias);
+extern void runDeleteStmt(DeleteStmt* node, List* relationList);
 
 #endif /* PROCESS_H_ */
