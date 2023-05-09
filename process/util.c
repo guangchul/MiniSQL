@@ -171,14 +171,14 @@ char* getVal(HeapTupleHeaderData* tuple, DB_Columns_Set* columnsSet, int i) {
 			if(j == i) {
 				int type = columns->flag >> 2;
 				switch(type) {
-					case CHAR:
-					case SHORT:
-					case INT:
+					case F_CHAR:
+					case F_SHORT:
+					case F_INT:
 					{
 						int val = *((int*)addr);
 						return itoa_local(val);
 					}
-					case LONG:
+					case F_LONG:
 
 						break;
 					default:

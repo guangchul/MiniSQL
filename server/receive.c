@@ -4,9 +4,16 @@
  *  Created on: May 6, 2023
  *      Author: choi
  */
+#include "../global/machine.h"
 #include "../util/string.h"
 #include "server.h"
+#ifdef WIN
+#include <winsock2.h>
+#include <windows.h>
+#endif
+#ifdef LINUX
 #include <sys/socket.h>
+#endif
 #include <stdio.h>
 #include "../util/mem.h"
 #include "../global/config.h"
@@ -18,8 +25,6 @@ ssize_t rawRead(int connectFd, void *ptr, int len) {
 	n = recv(connectFd, ptr, len, 0);
 	return n;
 }
-
-
 
 int readClientBuff(String* command, Connect* connect) {
 	char* buff = malloc_local(BUFFERS_SIZE);

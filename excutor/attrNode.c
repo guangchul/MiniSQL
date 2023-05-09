@@ -15,29 +15,29 @@ unsigned char calcFieldFlag(FieldType fieldType, unsigned int* length, char null
 	unsigned short type;
 	unsigned short flexible = 0;
 	switch(fieldType) {
-		case CHAR:
-			type = CHAR;
+		case F_CHAR:
+			type = F_CHAR;
 			*length = *length == 0 ? 1 : *length;
 			break;
-		case SHORT:
-			type = SHORT;
+		case F_SHORT:
+			type = F_SHORT;
 			*length = 2;
 			break;
-		case INT:
-			type = INT;
+		case F_INT:
+			type = F_INT;
 			*length = 4;
 			break;
-		case LONG:
-			type = LONG;
+		case F_LONG:
+			type = F_LONG;
 			*length = 8;
 			break;
-		case VARCHAR:
-			type = VARCHAR;
+		case F_VARCHAR:
+			type = F_VARCHAR;
 			flexible = 1;
 			*length = *length == 0 ? 1 : *length;
 			break;
-		case TEXT:
-			type = TEXT;
+		case F_TEXT:
+			type = F_TEXT;
 			flexible = 1;
 
 	}
@@ -100,9 +100,9 @@ FieldValuesList* makeFieldValuesList(FieldNodes* fieldNodes, char** into_columns
 			fieldValue->fieldName = fieldNode->fieldName;
 			FieldType fieldType = fieldNode->flag >> 2;
 			switch(fieldType) {
-				case SHORT:
-				case INT:
-				case LONG:
+				case F_SHORT:
+				case F_INT:
+				case F_LONG:
 					fieldValue->value.long_value = atoi(value);
 					break;
 				default:

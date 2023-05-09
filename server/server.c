@@ -4,9 +4,15 @@
  *  Created on: May 6, 2023
  *      Author: choi
  */
-
+#include "../global/machine.h"
 #include "server.h"
+#ifdef WIN
+#include <winsock2.h>
+#include <windows.h>
+#endif
+#ifdef LINUX
 #include <sys/select.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -58,10 +64,21 @@ int validateConnection(Connect* connect) {
 	char* buff = malloc_local(size);
 	memcpy(buff, _buff, size);
 	free(_buff);
-	unsigned int proto = (unsigned int)(*(unsigned int*)(buff + 4));
+	unsigned int proto = 0;//(unsigned int)(*(unsigned int*)(buff + 4));
+	for(int i = 0; i < 4; i++){
+		proto |= ((unsigned char)(*(buff + 7 - i)) << (i * 8));
+	}
+	if(proto == ((1234 << 16) | 5679)){
+		free(buff);
+		char SSLok = 'N';
+		if(rawWrite(connect->fd, &SSLok, 1) != 1){
+			exit(0);
+		}
+		return validateConnection(connect);
+	}
 	connect->proto = proto;
 	int result = -1;
-	if(proto >> 8 >= 3){
+	if(proto >> 16 >= 3){
 		int offset = 8;
 		while(size > offset) {
 			char* name = buff + offset;
@@ -117,7 +134,22 @@ void replyClient(Connect* connect, Buffer* buffer) {
 	free(buffer->data);
 	free(buffer);
 }
-
+#ifdef WIN
+DWORD APIENTRY newThread(LPVOID threadArg) {
+	Connect* connect = (Connect*)threadArg;
+	int validate = validateConnection(connect);
+	if(validate == 1) {
+		setConfigGenerics(connect);
+		Buffer* buffer = malloc_local(sizeof(Buffer));
+		buffer->data = malloc_local(BUFFERS_SIZE);
+		makeReplyBuff(buffer);
+		replyClient(connect, buffer);
+		setConnect(connect);
+		processMain(connect->schema);
+	}
+	return 0;
+}
+#endif
 void serverLoop(int listenFd) {
 	fd_set rdset, tmp;
 	FD_ZERO(&rdset);
@@ -133,6 +165,7 @@ void serverLoop(int listenFd) {
 			continue;
 		} else if(ret > 0) {
 			int connectFd = connection(listenFd);
+#ifdef LINUX
 			pid_t pid = fork();
 			if(pid == 0) {
 				Connect* connect = malloc_local(sizeof(Connect));
@@ -148,6 +181,17 @@ void serverLoop(int listenFd) {
 					processMain(connect->schema);
 				}
 			}
+#endif
+#ifdef WIN
+			HANDLE hThread;
+			DWORD ThreadID;
+			Connect* connect = malloc_local(sizeof(Connect));
+			connect->fd = connectFd;
+			hThread = CreateThread(NULL, 0L, newThread, connect, 0L, &ThreadID);
+			if(hThread == NULL) {
+				exit(0);
+			}
+#endif
 		}
 	}
 }
@@ -155,6 +199,8 @@ void serverLoop(int listenFd) {
 
 void start(int port) {
 	int listenFd = initServerSocket(port);
+#ifdef LINUX
 	setServerNonBlocking(listenFd);
+#endif
 	serverLoop(listenFd);
 }

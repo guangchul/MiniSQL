@@ -56,12 +56,12 @@ typedef struct DB_Index{
 }DB_Index;
 
 typedef enum FieldType{
-	CHAR = 1,
-	SHORT,
-	INT,
-	VARCHAR,
-	TEXT,
-	LONG
+	F_CHAR = 1,
+	F_SHORT,
+	F_INT,
+	F_VARCHAR,
+	F_TEXT,
+	F_LONG
 } FieldType;
 
 typedef struct FieldNode{
