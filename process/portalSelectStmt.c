@@ -357,7 +357,7 @@ DB_Columns_Set* makeSlotColumnsSet(List* relationList) {
 		Relation* relation = (Relation*)listNode->value.ptr_val;
 		DB_Columns_Set* colSet = relation->columnsSet;
 		for(int i = 0; i < colSet->count; i++) {
-			DB_Columns* columns = malloc_local(sizeof(FieldNode));
+			DB_Columns* columns = malloc_local(sizeof(DB_Columns));
 			columns->tableInfo = relation->tableInfo;
 			columns->id = colSet->columns[i]->id;
 			columns->fieldName = colSet->columns[i]->fieldName;
@@ -366,12 +366,19 @@ DB_Columns_Set* makeSlotColumnsSet(List* relationList) {
 			listAppend(tempList, columns);
 		}
 	}
-	DB_Columns_Set* columnsSet = malloc_local(sizeof(DB_Columns_Set) + (sizeof(DB_Columns_Set*) * tempList->length));
+	DB_Columns_Set* columnsSet = malloc_local(sizeof(DB_Columns_Set) + (sizeof(DB_Columns*) * tempList->length));
 	columnsSet->count = tempList->length;
 
 	int idx = 0;
 	foreach(listNode, tempList) {
-		DB_Columns* columns = (DB_Columns*)listNode->value.ptr_val;
+		DB_Columns* columns = malloc_local(sizeof(DB_Columns));
+		DB_Columns* _columns = (DB_Columns*)listNode->value.ptr_val;
+//		columns->tableInfo = _columns->tableInfo;
+//		columns->id = _columns->id;
+//		columns->fieldName = _columns->fieldName;
+//		columns->flag = _columns->flag;
+//		columns->length = _columns->length;
+		memcpy(columns, _columns, sizeof(DB_Columns));
 		columnsSet->columns[idx] = columns;
 		idx++;
 	}
@@ -427,12 +434,13 @@ void runSelectStmt(SelectStmt* node, List* relationList){
 	slot->tuple = (void*)0;
 	slot->end = 0;
 	slot->loop = 0;
+	writeResultHeader(slot, (Node*)node);
 	int* isOut = malloc_local(sizeof(int));
 	*isOut = 1;
 	for(;;) {
 		makeSlot(relationList->node, slot, node->whereClause, isOut);
 		if(slot->tuple != (void*)0 && fileter(slot, node->whereClause) == 1){
-			writeResult(slot, node);
+			writeResult(slot, (Node*)node);
 		}
 		if(slot->end == 1) {
 			break;

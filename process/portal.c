@@ -31,6 +31,7 @@ void runCreateStmt(CreateStmt* node, List* relationList, char* processSchema){
 		Relation* relation = (Relation*)listNode->value.ptr_val;
 		insert(relation);
 	}
+	writeResultHeader((void*)0, (void*)0);
 }
 
 void runInsertStmt(List* relationList) {
@@ -39,6 +40,7 @@ void runInsertStmt(List* relationList) {
 		Relation* relation = (Relation*)listNode->value.ptr_val;
 		insert(relation);
 	}
+	writeResultHeader((void*)0, (void*)0);
 }
 
 void portalRun(Node* node, List* relationList, char* processSchema){

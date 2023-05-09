@@ -14,5 +14,6 @@ extern void initBuffer();
 extern void initDB();
 extern void initTempBufferBlocks();
 extern void initUsingTempBufferBlocks();
+extern int getPort(int argc, char **argv);
 
 #endif /* INIT_H_ */

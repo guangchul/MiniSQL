@@ -18,7 +18,7 @@ int getChar() {
 	return getchar();
 }
 
-void readSingleCommand(String* command) {
+int readSingleCommand(String* command) {
 	printf("sql> ");
 	fflush(stdout);
 	int c;
@@ -33,6 +33,7 @@ void readSingleCommand(String* command) {
 		}
 		appendStringChar(command, (char)c);
 	}
+	return 'Q';
 }
 
 void writeSingle(Slot* slot, SelectStmt* node) {

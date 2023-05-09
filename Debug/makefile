@@ -9,6 +9,7 @@ RM := rm -rf
 # All of the sources participating in the build are defined here
 -include sources.mk
 -include util/subdir.mk
+-include server/subdir.mk
 -include process/subdir.mk
 -include parse/subdir.mk
 -include io/subdir.mk
@@ -16,6 +17,7 @@ RM := rm -rf
 -include file/subdir.mk
 -include excutor/subdir.mk
 -include cache/subdir.mk
+-include buffer/subdir.mk
 -include subdir.mk
 -include objects.mk
 

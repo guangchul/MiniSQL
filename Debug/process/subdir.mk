@@ -13,7 +13,8 @@ C_SRCS += \
 ../process/portalSelectStmt.c \
 ../process/portalUpdateStmt.c \
 ../process/process.c \
-../process/util.c 
+../process/util.c \
+../process/writeSelectStmt.c 
 
 OBJS += \
 ./process/analyze.o \
@@ -25,7 +26,8 @@ OBJS += \
 ./process/portalSelectStmt.o \
 ./process/portalUpdateStmt.o \
 ./process/process.o \
-./process/util.o 
+./process/util.o \
+./process/writeSelectStmt.o 
 
 C_DEPS += \
 ./process/analyze.d \
@@ -37,7 +39,8 @@ C_DEPS += \
 ./process/portalSelectStmt.d \
 ./process/portalUpdateStmt.d \
 ./process/process.d \
-./process/util.d 
+./process/util.d \
+./process/writeSelectStmt.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

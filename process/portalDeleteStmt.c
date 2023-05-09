@@ -17,6 +17,7 @@ void runDeleteStmt(DeleteStmt* node, List* relationList) {
 	slot->tuple = (void*)0;
 	slot->end = 0;
 	slot->loop = 0;
+	writeResultHeader((void*)0, (void*)0);
 	int* isOut = malloc_local(sizeof(int));
 	*isOut = 1;
 	for(;;) {

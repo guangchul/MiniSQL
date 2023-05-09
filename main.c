@@ -8,6 +8,7 @@
 #include "process/process.h"
 #include <string.h>
 #include <stdlib.h>
+#include "server/server.h"
 
 void initDir(int argc, char **argv) {
 	setDir(argc, argv);
@@ -35,5 +36,7 @@ int main(int argc, char **argv) {
 			exit(0);
 		}
 	}
+	int port = getPort(argc, argv);
+	start(port);
 	return 0;
 }

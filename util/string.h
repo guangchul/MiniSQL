@@ -17,5 +17,7 @@ extern String* makeString();
 extern void resetString(String* string);
 extern void appendStringChar(String* string, char ch);
 extern char* itoa_local(int number);
+extern void appendString(String* string, char* str);
+extern void appendStringOffset(String* string, char* ptr, int start, int len);
 
 #endif /* STRING_H_ */

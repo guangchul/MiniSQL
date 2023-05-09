@@ -6,17 +6,20 @@
 C_SRCS += \
 ../init/buffInit.c \
 ../init/dirInit.c \
-../init/initDB.c 
+../init/initDB.c \
+../init/portInit.c 
 
 OBJS += \
 ./init/buffInit.o \
 ./init/dirInit.o \
-./init/initDB.o 
+./init/initDB.o \
+./init/portInit.o 
 
 C_DEPS += \
 ./init/buffInit.d \
 ./init/dirInit.d \
-./init/initDB.d 
+./init/initDB.d \
+./init/portInit.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
