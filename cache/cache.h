@@ -15,8 +15,9 @@
 #define BLOCKS_CACHE 2
 #define TABLE_INFO 3
 #define COLUMN_INFO 4
+#define INDEX_INFO 5
 
-#define MAPS_SIZE 5
+#define MAPS_SIZE 6
 
 #include "../global/rel.h"
 

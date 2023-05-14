@@ -522,7 +522,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 19 "../parse/bison.y"
+#line 20 "../parse/bison.y"
 
 	core_YYSTYPE		core_yystype;
 	/* these fields must match core_YYSTYPE: */
@@ -540,8 +540,9 @@ union YYSTYPE
 	WhereSingle			*whereSingle;
 	UpdateStmt			*updateStmt;
 	DeleteStmt			*deleteStmt;
+	CreateIndexStmt		*createIndexStmt;
 
-#line 545 "../parse/bison.h"
+#line 546 "../parse/bison.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

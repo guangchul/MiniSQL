@@ -48,12 +48,17 @@ typedef struct DB_Columns_Set{
 
 typedef struct DB_Index{
 	unsigned int id;
-	unsigned int tableId;
 	char* indexName;
 	char* indexFileName;
 	unsigned int columnsCount;
 	char* columnIds;
+	DB_Table* tableInfo;
 }DB_Index;
+
+typedef struct DB_Index_Set{
+	int count;
+	DB_Index* index[];
+} DB_Index_Set;
 
 typedef enum FieldType{
 	F_CHAR = 1,
@@ -98,6 +103,7 @@ typedef struct FieldValuesList{
 typedef enum ExtendType{
 	T_Select,
 	T_Insert,
+	T_CreateIndex,
 } ExtendType;
 
 typedef struct SelectRelationExtend{
@@ -121,6 +127,13 @@ typedef struct InsertRelationExtend{
 	FieldNodes* fieldNodes;
 	FieldValuesList* fieldValuesList;
 }InsertRelationExtend;
+
+typedef struct CreateIndexRelationExtend{
+	ExtendType type;
+	int* columnsIds;
+	int* columnsNo;
+	int columnsIdCount;
+} CreateIndexRelationExtend;
 
 typedef struct RelationExtend{
 	ExtendType type;

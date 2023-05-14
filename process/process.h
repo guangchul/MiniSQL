@@ -38,5 +38,9 @@ extern void checkUpdateWhereClause(List* whereClause, char* alias);
 extern void runDeleteStmt(DeleteStmt* node, List* relationList);
 extern void writeSelectStmtHeader(Slot* slot, SelectStmt* selectStmt, Buffer* buffer);
 extern void writeSelectResult(Slot* slot, SelectStmt* selectStmt, Buffer* buffer);
+extern List* analyzeCreateIndexStmt(CreateIndexStmt* node, char* schema);
+extern DB_Index_Set* getIndexSet(DB_Table* tableInfo, char* schema);
+extern void runCreateIndexStmt(CreateIndexStmt* node, List* relationList);
+extern HeapTupleHeaderData* getTupleRecursion(Relation* relation, HeapTupleHeaderData* tuple);
 
 #endif /* PROCESS_H_ */

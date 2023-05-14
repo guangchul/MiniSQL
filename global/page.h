@@ -36,6 +36,14 @@ typedef struct PageHeaderData{
 	ItemIdData tuple_desc[]; //offset 28
 }PageHeaderData;
 
+#define INDEX_RANGE_OFFSET 0x1FF0
+
+typedef struct IndexRange{
+	int indexCount;
+	int min;
+	int max;
+}IndexRange;
+
 typedef struct uint96 {
 	uint32 un_distributed_uint96_01;
 	uint32 un_distributed_uint96_02;
@@ -56,5 +64,12 @@ typedef struct HeapTupleHeaderData{
 	uint8 offset_of_data; //offset 22
 	uint8 bits[]; //offset 23
 } HeapTupleHeaderData;
+
+typedef struct IndexTupleData{
+	ItemDesc item_desc;
+	unsigned short bits;
+}IndexTupleData;
+
+#define INDEX_SIZE_MASK 0x1FFF
 
 #endif /* PAGE_H_ */

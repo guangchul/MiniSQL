@@ -149,6 +149,9 @@ List* analyze(Node* node, char* schema) {
 		case T_DeleteStmt:
 			list = analyzeDeleteStmt((DeleteStmt*)node, schema);
 			break;
+		case T_CreateIndexStmt:
+			list = analyzeCreateIndexStmt((CreateIndexStmt*)node, schema);
+			break;
 		default:
 			break;
 	}

@@ -9,6 +9,7 @@ int calcLength(int type, int length);
 char* fnc_itoa(int number);
 typedef union YYSTYPE YYSTYPE;
 extern int yylex (YYSTYPE * yylval_param , yyscan_t yyscanner);
+extern void flex_error(char* str, char* scanbuf, yyscan_t yyscanner);
 %}
 
 %pure-parser
@@ -33,6 +34,7 @@ extern int yylex (YYSTYPE * yylval_param , yyscan_t yyscanner);
 	WhereSingle			*whereSingle;
 	UpdateStmt			*updateStmt;
 	DeleteStmt			*deleteStmt;
+	CreateIndexStmt		*createIndexStmt;
 }
 
 %type <ival> TypeName Iconst Nullable
@@ -43,6 +45,7 @@ extern int yylex (YYSTYPE * yylval_param , yyscan_t yyscanner);
 %type <keyword> unreserved_keyword
 %type <keyword> col_name_keyword reserved_keyword 
 %type <list> TableElementList identList columnsList opt_target_list from_list from_clause where_list where_clause update_where_clause simple_where_list delete_where_clause
+%type <list> column_list
 %type <node> stmt
 %type <list> multi multiValue valuesList update_value_list
 %type <insertStmt> InsertStmt
@@ -51,6 +54,7 @@ extern int yylex (YYSTYPE * yylval_param , yyscan_t yyscanner);
 %type <whereSingle> where_single simple_where_single
 %type <updateStmt> UpdateStmt
 %type <deleteStmt> DeleteStmt
+%type <createIndexStmt> CreateIndexStmt
 
 
 %token <str>	IDENT FCONST SCONST BCONST XCONST Op
@@ -194,6 +198,7 @@ stmt:CreateStmt {$$ = (Node*)$1;}
 	|SelectStmt {$$ = (Node*)$1;}
 	|UpdateStmt {$$ = (Node*)$1;}
 	|DeleteStmt {$$ = (Node*)$1;}
+	|CreateIndexStmt {$$ = (Node*)$1;}
 	| {$$ = (void*)0;}
 	;
 	
@@ -205,6 +210,29 @@ DeleteStmt: DELETE_P FROM ColId delete_where_clause
 		deleteStmt->fromClause = fromClause;
 		deleteStmt->whereClause = $4;
 		$$ = deleteStmt;
+	}
+	;
+	
+CreateIndexStmt: CREATE INDEX ColId ON ColId '(' column_list ')'
+	{
+		CreateIndexStmt* createIndexStmt = (CreateIndexStmt*)makeNode(CreateIndexStmt);
+		createIndexStmt->indexName = $3;
+		createIndexStmt->tableName = $5;
+		createIndexStmt->columnList = $7;
+		$$ = createIndexStmt;
+	}
+	;
+	
+column_list: ColId
+	{
+		List* list = (List*)newList();
+		lappend(list, $1);
+		$$ = list;
+	}
+	| column_list ',' ColId
+	{
+		lappend($1, $3);
+		$$ = $1;
 	}
 	;
 	
@@ -1226,7 +1254,8 @@ char* fnc_itoa(int number) {
 }
 
 void yyerror(yyscan_t yyscanner, char *str) {
-	fprintf(stderr, "error:%s\n", str);
+	char* scanbuf = (*((yy_extra_type **) (yyscanner)))->scanbuf;
+	flex_error(str, scanbuf, yyscanner);
 	(*((yy_extra_type **) (yyscanner)))->list = (void*)0;
 }
 

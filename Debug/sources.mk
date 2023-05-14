@@ -25,8 +25,10 @@ C_DEPS :=
 SUBDIRS := \
 buffer \
 cache \
+error \
 excutor \
 file \
+index \
 init \
 io \
 . \

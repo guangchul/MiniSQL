@@ -14,8 +14,10 @@ RM := rm -rf
 -include parse/subdir.mk
 -include io/subdir.mk
 -include init/subdir.mk
+-include index/subdir.mk
 -include file/subdir.mk
 -include excutor/subdir.mk
+-include error/subdir.mk
 -include cache/subdir.mk
 -include buffer/subdir.mk
 -include subdir.mk

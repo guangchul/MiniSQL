@@ -82,6 +82,7 @@ int connection(int listenFd) {
 		printf("accept error\n");
 		exit(0);
 	}
+#ifdef WIN
 	int on = 1;
 	if(setsockopt(connectFd, IPPROTO_TCP, TCP_NODELAY, (char*)&on, sizeof(on)) < 0){
 		exit(0);
@@ -90,7 +91,7 @@ int connection(int listenFd) {
 	if(setsockopt(connectFd, SOL_SOCKET, SO_KEEPALIVE, (char*)&on, sizeof(on)) < 0) {
 		exit(0);
 	}
-#ifdef WIN
+
 	int oldopt;
 	int optlen;
 	int newopt;

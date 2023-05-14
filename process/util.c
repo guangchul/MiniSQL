@@ -205,3 +205,69 @@ char* getFieldVal(Slot* slot, Field field) {
 	}
 	return getVal(slot->tuple, slot->columnsSet, i);
 }
+
+DB_Index_Set* getIndexSet(DB_Table* tableInfo, char* schema) {
+	char* tableName = tableInfo->name;
+	char key[1024];
+	key[0] = 0;
+	strcat(key, schema);
+	strcat(key, "/");
+	strcat(key, tableName);
+	key[strlen(schema) + 1 + strlen(tableName) + 1] = 0;
+	void* val = getFromHashMap(INDEX_INFO, key);
+	if(val != (void*)0){
+		return (DB_Index_Set*)val;
+	}
+
+	DB_Index_Set* indexSet = malloc_local(sizeof(DB_Index_Set) + (sizeof(DB_Index*) * tableInfo->indexCount));
+	FileNode* fileNode = malloc_local(sizeof(FileNode));
+	fileNode->schema = schema;
+	fileNode->file = "indices.tb";
+	makeFileNode(fileNode);
+	List* blockList = getPageBlocks(fileNode);
+	ListNode* listNode;
+	int idx = 0;
+	foreach(listNode, blockList) {
+		int block = listNode->value.int_val;
+		void* page = (void*)(BufferBlocks + (block * BUFFERS_SIZE));
+		PageHeaderData* pageHeaderData = (PageHeaderData*) page;
+		int descCount = (pageHeaderData->start_of_free_space - 28) / 4;
+		for(int i = 0; i < descCount; i++) {
+			HeapTupleHeaderData* heapTupleHeaderData = (HeapTupleHeaderData*)(page + pageHeaderData->tuple_desc[i].lp_off);
+			uint8 off = heapTupleHeaderData->offset_of_data;
+			char* bits = ((char*)heapTupleHeaderData) + off;
+			int _id = *((int*)bits);
+			bits = bits + 4;
+			int _tableId = *((int*)bits);
+			if(_tableId == tableInfo->id){
+				bits = bits + 4;
+				int _len = *bits >> 1;
+				char* indexName = malloc_local(_len);
+				memcpy(indexName, bits + 1, _len - 1);
+				bits = bits + _len;
+				_len = *bits >> 1;
+				char* indexFileName = malloc_local(_len);
+				memcpy(indexFileName, bits + 1, _len - 1);
+				bits = bits + _len;
+				int columnsCount = *((int*)bits);
+				bits = bits + 4;
+				_len = *bits >> 1;
+				char* columnIds = malloc_local(_len);
+				memcpy(columnIds, bits + 1, _len - 1);
+				DB_Index* index = malloc_local(sizeof(DB_Index));
+				index->id = _id;
+				index->indexName = indexName;
+				index->indexFileName = indexFileName;
+				index->columnsCount = columnsCount;
+				index->columnIds = columnIds;
+				index->tableInfo = tableInfo;
+				indexSet->index[idx] = index;
+				idx++;
+			}
+		}
+	}
+	free(fileNode);
+	indexSet->count = idx;
+	putToHashMap(INDEX_INFO, key, indexSet);
+	return indexSet;
+}

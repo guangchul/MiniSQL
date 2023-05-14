@@ -23,6 +23,7 @@ typedef enum NodeTag{
 	T_UpdateStmt,
 	T_UpdateValue,
 	T_DeleteStmt,
+	T_CreateIndexStmt,
 } NodeTag;
 
 typedef struct Node{
@@ -116,6 +117,13 @@ typedef struct DeleteStmt{
 	FromClause* fromClause;
 	List * whereClause;
 } DeleteStmt;
+
+typedef struct CreateIndexStmt{
+	NodeTag type;
+	char* indexName;
+	char* tableName;
+	List* columnList;
+} CreateIndexStmt;
 
 #define makeNode(NodeTag) newNode(sizeof(NodeTag), T_##NodeTag)
 

@@ -41,6 +41,9 @@ int readCommand(String* command) {
 }
 
 void writeResultHeader(Slot* slot, Node* node) {
+	if(single == 1) {
+		return;
+	}
 	Buffer* _buffer = malloc_local(sizeof(Buffer));
 	_buffer->data = malloc_local(BUFFERS_SIZE);
 	if(slot == (void*)0 || node == (void*)0) {
@@ -111,8 +114,13 @@ void executeSql(char* queryString) {
 	foreach(listNode, list) {
 		Node* node = (Node*)(listNode->value.ptr_val);
 		List* relationList = analyze(node, processSchema);
+		if(relationList == (void*)0 || relationList->length == 0) {
+			return;
+		}
 		portalRun(node, relationList, processSchema);
-		endWrite(node);
+		if(single != 1){
+			endWrite(node);
+		}
 		freeRelationList(relationList);
 	}
 }

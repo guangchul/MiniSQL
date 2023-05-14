@@ -40,6 +40,39 @@ int createTable(FileNode* fileNode, PageHeaderData* pageHeaderData){
 	return result;
 }
 
+int createIndex(FileNode* fileNode) {
+	if(fileNode->fd <= 0) {
+		if(fileNode->schema == (void*)0 || fileNode->file == (void*)0) {
+			return -1;
+		}
+		makeFileNode(fileNode);
+	}
+	PageHeaderData* pageHeaderData = malloc_local(sizeof(PageHeaderData));
+	pageHeaderData->un_distributed_1.xlogid = 0;
+	pageHeaderData->un_distributed_1.xrecoff = 0;
+	pageHeaderData->un_distributed_2 = 0;
+	pageHeaderData->un_distributed_4 = 0;
+	pageHeaderData->un_distributed_5 = 0;
+	pageHeaderData->un_distributed_6 = 0;
+	pageHeaderData->page_flags = 0;
+	pageHeaderData->start_of_free_space = 28;
+	pageHeaderData->end_of_free_space = BUFFERS_SIZE - 16;
+	pageHeaderData->page_no = 0;
+	IndexRange* indexRange = malloc_local(sizeof(IndexRange));
+	indexRange->indexCount = 0;
+	indexRange->max = 0;
+	indexRange->min = 0;
+	char* buffer = malloc_local(0x2000);
+
+	memcpy(buffer, pageHeaderData, sizeof(PageHeaderData));
+	memcpy(buffer + INDEX_RANGE_OFFSET, indexRange, sizeof(IndexRange));
+	int result = fileWrite(fileNode->fd, buffer, 0, BUFFERS_SIZE);
+	free(buffer);
+	free(pageHeaderData);
+	free(indexRange);
+	return result;
+}
+
 int insert(Relation* relation) {
 	char buffer[BUFFERS_SIZE];
 	InsertRelationExtend* extend = (InsertRelationExtend*)relation->ext;

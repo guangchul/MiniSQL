@@ -1142,6 +1142,12 @@ int scanKeywordLookup(char *keyword) {
 	return h;
 }
 
+void flex_error(char* str, char* scanbuf, void* yyscanner){
+	struct yyguts_t * yyg = (struct yyguts_t*)yyscanner;
+	int loc = strlen(scanbuf);
+	fprintf(stderr, "%s at or near \"%s %s\"\n", str, yyg->yytext_r, scanbuf + loc + 1);
+}
+
 yyscan_t scanner_init(yy_extra_type *yyext, char *cmd) {
 	yyscan_t scanner;
 	yylex_init(&scanner);
