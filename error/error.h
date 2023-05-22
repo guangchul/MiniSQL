@@ -9,7 +9,7 @@
 #define ERROR_H_
 
 
-extern void printError(char* errMsg);
+extern void printError(char* format, ...);
 
 
 #endif /* ERROR_H_ */

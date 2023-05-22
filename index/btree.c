@@ -13,6 +13,7 @@
 #include "../util/mem.h"
 #include "../util/hash.h"
 #include "../cache/cache.h"
+#include "../node/parseNodes.h"
 #include <string.h>
 #include <stdlib.h>
 
@@ -160,4 +161,157 @@ void btreeInsert(HeapTupleHeaderData* tuple, int tupleLength, Relation* tableRel
 	indexTupleData->bits = offset - bitCount;
 	writeToIndex(indexRelation, indexTupleData, buff, offset, pos, hash);
 	free(buff);
+}
+
+void btreeSearch(IndexData* indexData, char* page, int hash, int offset) {
+	PageHeaderData* pageHeaderData = (PageHeaderData*)page;
+	int count = (pageHeaderData->start_of_free_space - 28) / 4;
+	if(count == 0) {
+		return;
+	}
+	if(count == 1) {
+		ItemIdData itemIdData = pageHeaderData->tuple_desc[0];
+		IndexTupleData* indexTuple = (IndexTupleData*)(page + itemIdData.lp_off);
+		int len = indexTuple->bits & INDEX_SIZE_MASK;
+		int _hash = hashCode(((char*)indexTuple) + 8 + offset, len);
+		if(_hash == hash) {
+			indexData->min = 0;
+		}
+		return;
+	}
+	int mid = (count - 1) / 2;
+	int max = count - 1;
+	int min = 0;
+	//search left
+	int sig = 0;
+	while(mid < max) {
+		ItemIdData itemIdData = pageHeaderData->tuple_desc[mid];
+		IndexTupleData* indexTuple = (IndexTupleData*)(page + itemIdData.lp_off);
+		int len = indexTuple->bits & INDEX_SIZE_MASK;
+		int _hash = hashCode(((char*)indexTuple) + 8 + offset, len);
+		if(hash == _hash){
+			if(indexData->start == mid) {
+				break;
+			}
+			indexData->start = mid;
+		}
+		if(_hash >= hash) {
+			max = mid;
+			mid = (max - min) / 2 + min;
+		} else {
+			min = mid;
+			mid = (max - min + 1) / 2 + min;
+		}
+		sig++;
+		if(sig >= count){
+			break;
+		}
+
+	}
+	mid = (count - 1) / 2;
+	max = count - 1;
+	min = 0;
+	sig = 0;
+	//search right
+	while(min < mid) {
+		ItemIdData itemIdData = pageHeaderData->tuple_desc[mid];
+		IndexTupleData* indexTuple = (IndexTupleData*)(page + itemIdData.lp_off);
+		int len = indexTuple->bits & INDEX_SIZE_MASK;
+		int _hash = hashCode(((char*)indexTuple) + 8 + offset, len);
+		if(hash == _hash){
+			if(indexData->end == mid) {
+				break;
+			}
+			indexData->end = mid;
+		}
+		if(_hash <= hash) {
+			min = mid;
+			mid = (max - min + 1) / 2 + min;
+		} else {
+			max = mid;
+			mid = (max - min) / 2 + min;
+		}
+		sig++;
+		if(sig >= count){
+			break;
+		}
+	}
+}
+
+IndexSet* collectIndexSet(Index* index, List* whereClause) {
+	DB_Columns_Set* columnsSet = index->columnsSet;
+	ListNode* listNode;
+	char* buff = malloc_local(BUFFERS_SIZE);
+	int len = 0;
+	for(int i = 0; i < columnsSet->count; i++) {
+		DB_Columns* columns = columnsSet->columns[i];
+		listNode = (void*)0;
+		foreach(listNode, whereClause) {
+			WhereCondition* whereCondition = (WhereCondition*)listNode->value.ptr_val;
+			if(whereCondition->isList == 0 && whereCondition->condition == 1) {
+				if(whereCondition->whereSingle->right.isVal == 1){
+					if(strcmp(whereCondition->whereSingle->left.tableAlias, columns->tableInfo->alias) == 0 && strcmp(whereCondition->whereSingle->left.field, columns->fieldName) == 0){
+						int flexible = columns->flag & 0x1;
+						if(flexible == 1) { //flexible
+							int size = strlen(whereCondition->whereSingle->right.val);
+							memset(buff + len, ((size + 1) << 1) + 1, 1);
+							len += 1;
+							memcpy(buff + len, whereCondition->whereSingle->right.val, size);
+							len += size;
+						} else {
+							int type = columns->flag >> 2;
+							switch(type) {
+								case F_CHAR:
+								case F_SHORT:
+								case F_INT:
+								{
+									char* cVal = whereCondition->whereSingle->right.val;
+									int val = atoi(cVal);
+									for(int i = 0; i < 4; i++) {
+										memset(buff + len + i, val >> ((3 - i) * 8), 1);
+									}
+									len += 4;
+									break;
+								}
+								case F_LONG:
+
+									break;
+								default:
+									break;
+
+							}
+						}
+						break;
+					}
+				}
+			}
+		}
+	}
+	int hash = hashCode(buff, len);
+	free(buff);
+	List* blocks = getPageBlocks(index->fileNode);
+	IndexSet* indexSet = malloc_local(sizeof(IndexSet) + (sizeof(IndexData*) * blocks->length));
+	indexSet->pageCount = blocks->length;
+	listNode = (void*)0;
+	int idx = 0;
+	int offset = (columnsSet->count - 1) / 8 + 1;
+	foreach(listNode, blocks) {
+		int blockNo = listNode->value.int_val;
+		char* page = BufferBlocks + (blockNo * BUFFERS_SIZE);
+		IndexRange* indexRange = (IndexRange*)(page + INDEX_RANGE_OFFSET);
+		IndexData* indexData = malloc_local(sizeof(IndexData));
+		indexData->min = indexRange->min;
+		indexData->max = indexRange->max;
+		indexData->indexCount = indexRange->indexCount;
+		indexData->pageNo = blockNo;
+		indexData->start = -1;
+		indexData->end = -1;
+		indexSet->data[idx] = indexData;
+		idx++;
+		if(hash < indexRange->min || hash > indexRange->max) {
+			continue;
+		}
+		btreeSearch(indexData, page, hash, offset);
+	}
+	return indexSet;
 }

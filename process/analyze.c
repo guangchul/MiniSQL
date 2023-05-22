@@ -13,6 +13,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../util/mem.h"
+#include "../error/error.h"
+#include <regex.h>
 
 List* analyzeCreateStmt(CreateStmt* node, char* schema){
 	List* list = makeList();
@@ -102,17 +104,110 @@ char*** parseListToIntoValues(List* list, int columnCount) {
 }
 
 List* analyzeInsertStmt(InsertStmt* node, char* schema) {
-	//todo when node->columnsList->length != 0 and node->columnsList->length != node->valuesList[i]->length then throw exception.
 	FileNode* fileNode = (FileNode*)malloc_local(sizeof(FileNode));
 	fileNode->schema = schema;
 	DB_Table* tableInfo = getTableInfo(schema, node->tableNode->tableName, (void*)0);
+	if(tableInfo == (void*)0) {
+		printError("table name \"%s\" not exists!", node->tableNode->tableName);
+		return (void*)0;
+	}
 	fileNode->file = tableInfo->fileName;
 	makeFileNode(fileNode);
 	DB_Columns_Set* columnsSet = getColumnsSet(schema, tableInfo);
+	List* columnsList = node->columnsList;
 	FieldNodes* fieldNodes = makeFieldNodes(columnsSet->columns, columnsSet->count);
-	if(node->columnsList->length == 0) {
+	if(columnsList->length == 0) {
 		for(int i = 0; i < columnsSet->count; i++) {
 			listAppend(node->columnsList, columnsSet->columns[i]->fieldName);
+		}
+	} else {
+		ListNode* listNode;
+		foreach(listNode, columnsList) {
+			char* column = listNode->value.ptr_val;
+			int found = 0;
+			for(int i = 0; i < columnsSet->count; i++) {
+				if(strcmp(column, columnsSet->columns[i]->fieldName) == 0){
+					found = 1;
+					break;
+				}
+			}
+			if(found == 0){
+				printError("could not found column \"%s\" in table \"%s\"", column, tableInfo->name);
+				return (void*)0;
+			}
+		}
+	}
+	List* valuesList = node->valuesList;
+	ListNode* listNode;
+	foreach(listNode, valuesList) {
+		List* subList = (List*)listNode->value.ptr_val;
+		if(node->columnsList->length != subList->length) {
+			printError("value count mismatch!");
+			return (void*)0;
+		}
+	}
+	char* pattern = "^[0-9]*$";
+	int cflags = REG_EXTENDED;
+	regmatch_t pmatch[1];
+	const size_t nmatch = 1;
+	regex_t regex;
+	regcomp(&regex, pattern, cflags);
+	for(int i = 0; i < columnsSet->count; i++) {
+		DB_Columns* columns = columnsSet->columns[i];
+		listNode = (void*)0;
+		int found = -1;
+		int idx = 0;
+		foreach(listNode, node->columnsList) {
+			char* columnName = listNode->value.ptr_val;
+			if(strcmp(columnName, columns->fieldName) == 0){
+				found = idx;
+				break;
+			}
+			idx++;
+		}
+		int nullable = columns->flag & 0x2;
+		if(nullable != 0x2) {
+			if(found == -1) {
+				printError("column \"%s\" must not null", columns->fieldName);
+				return (void*)0;
+			} else {
+				int valuesCount = node->valuesList->length;
+				for(int i = 0; i < valuesCount; i++) {
+					char* value = listGet(node->valuesList, i);
+					if(value == (void*)0) {
+						printError("column \"%s\" must not null", columns->fieldName);
+						return (void*)0;
+					}
+				}
+			}
+		}
+		int length = columns->length;
+		FieldType type = columns->flag >> 2;
+		if(found != -1) {
+			int valuesCount = node->valuesList->length;
+			for(int i = 0; i < valuesCount; i++) {
+				List* valueList = listGet(node->valuesList, i);
+				char* value = listGet(valueList, found);
+				if(value != (void*)0 && strlen(value) > length) {
+					printError("columns \"%s\" length must less than %d.", columns->fieldName, length);
+					return (void*)0;
+				}
+				if(value != (void*)0){
+					switch(type) {
+						case F_SHORT:
+						case F_INT:
+						case F_LONG:
+
+							if(regexec(&regex, value, nmatch, pmatch, 0) != 0) {
+								printError("columns \"%s\" must a number.", columns->fieldName);
+								return (void*)0;
+							}
+							break;
+						default:
+							break;
+					}
+				}
+			}
 		}
 	}
 	char** intoColumns = parseListToIntoColumns(node->columnsList);
@@ -125,6 +220,8 @@ List* analyzeInsertStmt(InsertStmt* node, char* schema) {
 	extend->fieldNodes = fieldNodes;
 	extend->fieldValuesList = fieldValuesList;
 	relation->ext = (RelationExtend*)extend;
+	relation->tableInfo = tableInfo;
+	relation->columnsSet = columnsSet;
 	List* list = makeList();
 	listAppend(list, relation);
 	return list;

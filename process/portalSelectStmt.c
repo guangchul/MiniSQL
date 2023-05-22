@@ -13,6 +13,7 @@
 #include "../cache/cache.h"
 #include "../util/string.h"
 #include "../util/mem.h"
+#include "../index/index.h"
 #include <string.h>
 
 int match(char* left, char* op, char* right) {
@@ -115,6 +116,46 @@ int compare(HeapTupleHeaderData* tuple, unsigned int len, List* whereClause, cha
 int next(Relation* relation) {
 	SelectRelationExtend* extend = (SelectRelationExtend*)relation->ext;
 	if(extend->alreayMadeTempBlock == 0) {
+		if(relation->index != (void*)0){
+			IndexSet* indexSet = extend->indexSet;
+			if(relation->index->flag == 0) {
+				if(indexSet->nextPageSeq == -1) {
+					indexSet->nextPageSeq = 0;
+				}
+				for(int i = indexSet->nextPageSeq; i < indexSet->pageCount; i++) {
+					IndexData* data = indexSet->data[i];
+					if(data->start == -1 && data->end == -1) {
+						indexSet->nextPageSeq++;
+						continue;
+					}
+					if(data->start == -1 || data->end == -1) {
+						if(indexSet->nextItemPos == -1){
+							indexSet->nextItemPos = data->start == -1 ? data->end : data->start;
+							break;
+						} else {
+							indexSet->nextItemPos = -1;
+							indexSet->nextPageSeq++;
+							continue;
+						}
+					}
+					if(indexSet->nextItemPos == -1){
+						indexSet->nextItemPos = data->start;
+					} else {
+						indexSet->nextItemPos++;
+						if(indexSet->nextItemPos > data->end) {
+							indexSet->nextItemPos = -1;
+							indexSet->nextPageSeq++;
+							continue;
+						}
+					}
+				}
+				if(indexSet->nextItemPos == -1) {
+					extend->alreayMadeTempBlock = 1;
+					return -1;
+				}
+				return 1;
+			}
+		}
 		char* page = BufferBlocks + (extend->nextBlockNo * BUFFERS_SIZE);
 		PageHeaderData* pageHeaderData = (PageHeaderData*)page;
 		int itemCount = (pageHeaderData->start_of_free_space - 28) / 4;
@@ -247,14 +288,36 @@ void readBlock(Relation* relation, Slot* slot, List* whereClause) {
 	}
 	if(extend->alreayMadeTempBlock == 0) {
 		for(;;) {
-			char* page = BufferBlocks + (extend->nextBlockNo * BUFFERS_SIZE);
-			PageHeaderData* pageHeaderData = (PageHeaderData*)page;
-			if(pageHeaderData->start_of_free_space == 28) {
-				return;
-			}
-			ItemIdData itemIdData = pageHeaderData->tuple_desc[extend->nextItemPos];
-			HeapTupleHeaderData* tuple = (HeapTupleHeaderData*)(page + itemIdData.lp_off);
+			HeapTupleHeaderData* tuple;
+			ItemIdData itemIdData;
 			int result = 0;
+			if(relation->index != (void*)0) {
+				IndexSet* indexSet = extend->indexSet;
+				IndexData* data = indexSet->data[indexSet->nextPageSeq];
+				char* indexPage = BufferBlocks + (data->pageNo * BUFFERS_SIZE);
+				PageHeaderData* indexPageHeaderData = (PageHeaderData*)indexPage;
+				ItemIdData indexItemIdData = indexPageHeaderData->tuple_desc[indexSet->nextItemPos];
+				IndexTupleData* indexTupleData = (IndexTupleData*)(indexPage + indexItemIdData.lp_off);
+				int pageNo = indexTupleData->item_desc.page_hi << 16 | indexTupleData->item_desc.page_low;
+				int pos = indexTupleData->item_desc.pos_id;
+				List* list = getPageBlocks(relation->fileNode);
+				int blockNo = listGet_int(list, pageNo);
+				char* page = BufferBlocks + (blockNo * BUFFERS_SIZE);
+				PageHeaderData* pageHeaderData = (PageHeaderData*)page;
+				if(pageHeaderData->start_of_free_space == 28) {
+					return;
+				}
+				itemIdData = pageHeaderData->tuple_desc[pos];
+				tuple = (HeapTupleHeaderData*)(page + itemIdData.lp_off);
+			} else {
+				char* page = BufferBlocks + (extend->nextBlockNo * BUFFERS_SIZE);
+				PageHeaderData* pageHeaderData = (PageHeaderData*)page;
+				if(pageHeaderData->start_of_free_space == 28) {
+					return;
+				}
+				itemIdData = pageHeaderData->tuple_desc[extend->nextItemPos];
+				tuple = (HeapTupleHeaderData*)(page + itemIdData.lp_off);
+			}
 			if((tuple->attrs_count & 0x8000) > 0 || (tuple->attrs_count & 0x2000) > 0) {
 				result = -1;
 			}
@@ -308,6 +371,7 @@ void readBlock(Relation* relation, Slot* slot, List* whereClause) {
 
 void makeSlot(ListNode* listNode, Slot* slot, List* whereClause, int* isOut) {
 	Relation* relation = (Relation*)listNode->value.ptr_val;
+	int indexNext = 0;
 	if(relation->ext == (void*)0) {
 		SelectRelationExtend* extend = malloc_local(sizeof(SelectRelationExtend));
 		extend->type = T_Select;
@@ -322,6 +386,13 @@ void makeSlot(ListNode* listNode, Slot* slot, List* whereClause, int* isOut) {
 		*isOut = 0;
 		extend->isLast = listNode->next->value.ptr_val != (void*)0 ? 0 : 1;
 		relation->ext = (RelationExtend*)extend;
+		if(relation->index != (void*)0) {
+			IndexSet* indexSet = collectIndexSet(relation->index, whereClause);
+			extend->indexSet = indexSet;
+			extend->indexSet->nextItemPos = -1;
+			extend->indexSet->nextPageSeq = -1;
+			indexNext = next(relation);
+		}
 	}
 	SelectRelationExtend* extend = (SelectRelationExtend*)relation->ext;
 	if(extend->isOuter == 1) {
@@ -331,7 +402,14 @@ void makeSlot(ListNode* listNode, Slot* slot, List* whereClause, int* isOut) {
 			slot->tuple_len = 0;
 		}
 	}
-	readBlock(relation, slot, whereClause);
+	if(relation->index != (void*)0) {
+		if(indexNext == 1) {
+			readBlock(relation, slot, whereClause);
+		}
+	}else {
+		readBlock(relation, slot, whereClause);
+	}
+
 
 	if(listNode->next != (void*)0 && listNode->next->value.ptr_val != (void*)0) {
 		makeSlot(listNode->next, slot, whereClause, isOut);

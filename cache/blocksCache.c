@@ -22,7 +22,7 @@ List* getPageBlocks(FileNode* fileNode) {
 	strcat(key, fileNode->schema);
 	strcat(key, "/");
 	strcat(key, fileNode->file);
-	key[strlen(fileNode->schema) + 1 + strlen(fileNode->file) + 1] = 0;
+	key[strlen(fileNode->schema) + 1 + strlen(fileNode->file)] = 0;
 	List* list = getFromHashMap(BLOCKS_CACHE, key);
 	if(list == (void*)0) {
 		list = makeList();

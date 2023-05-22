@@ -12,6 +12,8 @@
 #include "../util/list.h"
 #include "../util/mem.h"
 #include "../cache/cache.h"
+#include "../process/process.h"
+#include "../index/index.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -153,6 +155,13 @@ int insert(Relation* relation) {
 			memcpy(page, pageHeaderData, sizeof(PageHeaderData));
 			blockWriteToFile(relation, block, pageHeaderData->page_no * BUFFERS_SIZE);
 			free(itemData);
+		}
+		DB_Index_Set* indexSet = getIndexSet(relation->tableInfo, relation->fileNode->schema);
+		for(int i = 0; i < indexSet->count; i++) {
+			DB_Index* dbIndex = indexSet->index[i];
+			Relation* indexRelation = getIndexRelation(dbIndex, relation);
+			btreeInsert(heapTupleHeaderData, dataSize, relation, indexRelation);
+			flushTable(indexRelation);
 		}
 		free(heapTupleHeaderData);
 	}

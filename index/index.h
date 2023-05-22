@@ -12,6 +12,7 @@
 #include "../global/rel.h"
 
 extern void btreeInsert(HeapTupleHeaderData* tuple, int tupleLength, Relation* tableRelation, Relation* indexRelation);
-
+extern IndexSet* collectIndexSet(Index* index, List* whereClause);
+extern Relation* getIndexRelation(DB_Index* dbIndex, Relation* tableRelation);
 
 #endif /* INDEX_H_ */

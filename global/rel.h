@@ -106,6 +106,22 @@ typedef enum ExtendType{
 	T_CreateIndex,
 } ExtendType;
 
+typedef struct IndexData{
+	int pageNo;
+	int start;
+	int end;
+	int max;
+	int min;
+	int indexCount;
+}IndexData;
+
+typedef struct IndexSet{
+	int nextPageSeq;
+	int nextItemPos;
+	int pageCount;
+	IndexData* data[];
+}IndexSet;
+
 typedef struct SelectRelationExtend{
 	ExtendType type;
 	List* tempBlockList;
@@ -120,6 +136,7 @@ typedef struct SelectRelationExtend{
 	int isOuter; // 1 is outer; 0 is inner;
 	int isLast; // 1 is last; 0 is not;
 	int jump; // 1 is jump; 0 is not;
+	IndexSet* indexSet;
 } SelectRelationExtend;
 
 typedef struct InsertRelationExtend{
@@ -139,12 +156,17 @@ typedef struct RelationExtend{
 	ExtendType type;
 } RelationExtend;
 
+typedef struct Index{
+	int flag; //flag == 0 is equals; flag == 1 not equal; flag == 2 more than; flag == 3 less than;
+	FileNode* fileNode;
+	DB_Columns_Set* columnsSet;
+}Index;
+
 typedef struct Relation{
 	FileNode* fileNode;
-	int indexCount;
-	List* indexList;
 	DB_Table* tableInfo;
 	DB_Columns_Set* columnsSet;
+	Index* index;
 	RelationExtend* ext;
 } Relation;
 

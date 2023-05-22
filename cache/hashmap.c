@@ -46,13 +46,14 @@ void* getFromHashMap(int cacheId, void* key) {
 		unsigned int hashCode = calHashCode(key);
 		int hashIndex = hashCode & (NODES_SIZE - 1);
 		HashMapNode* node = hashMap->nodes[hashIndex];
-		if(node != (void*)0) {
-			for(;;) {
-				if(node->key == hashCode) {
-					return node->value;
-				}
-				node = node->next;
+		for(;;) {
+			if(node == 0) {
+				break;
 			}
+			if(node->key == hashCode) {
+				return node->value;
+			}
+			node = node->next;
 		}
 	}
 	return (void*)0;
