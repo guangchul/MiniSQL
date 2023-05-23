@@ -12,8 +12,12 @@
 #include "error.h"
 #include "../util/string.h"
 #include "../util/mem.h"
+#include "../buffer/buffer.h"
+#include "../global/config.h"
+#include "../server/server.h"
 
 extern int single;
+extern Connect* connect;
 
 void printError(char* format, ...) {
 	char* str = malloc_local(8192);
@@ -51,7 +55,42 @@ void printError(char* format, ...) {
 	if(single == 1) {
 		printf("%s\n", str);
 	} else {
-
+		Buffer* buffer = malloc_local(sizeof(Buffer));
+		buffer->data = malloc_local(BUFFERS_SIZE);
+		beginMessage(buffer, 'E');
+		appendInt(buffer, 0);
+		beginMessage(buffer, 'S');
+		appendValue(buffer, "ERROR");
+		beginMessage(buffer, 'V');
+		appendValue(buffer, "ERROR");
+		beginMessage(buffer, 'C');
+		appendValue(buffer, "10001");
+		beginMessage(buffer, 'M');
+		appendValue(buffer, str);
+		beginMessage(buffer, 'P');
+		appendValue(buffer, "1");
+		beginMessage(buffer, 'F');
+		appendValue(buffer, "process.c");
+		beginMessage(buffer, 'L');
+		appendValue(buffer, "10");
+		beginMessage(buffer, 'R');
+		appendValue(buffer, "analyze");
+		buffer->off++;
+		buffer->len++;
+		int tempOff = buffer->off;
+		int tempLen = buffer->len;
+		buffer->off = 1;
+		appendInt(buffer, buffer->len - 1);
+		buffer->off = tempOff;
+		buffer->len = tempLen;
+		rawWrite(connect->fd, buffer->data, buffer->len);
+		buffer->off = 0;
+		buffer->len = 0;
+		beginMessage(buffer, 'Z');
+		appendByteWithLength(buffer, 73);
+		rawWrite(connect->fd, buffer->data, buffer->len);
+		free(buffer->data);
+		free(buffer);
 	}
 	free(str);
 }
