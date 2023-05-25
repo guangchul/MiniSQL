@@ -14,7 +14,8 @@
 #include <string.h>
 #include "../util/mem.h"
 #include "../error/error.h"
-#include <regex.h>
+#include <stdio.h>
+//#include <regex.h>
 
 List* analyzeCreateStmt(CreateStmt* node, char* schema){
 	List* list = makeList();
@@ -146,12 +147,12 @@ List* analyzeInsertStmt(InsertStmt* node, char* schema) {
 			return (void*)0;
 		}
 	}
-	char* pattern = "^[0-9]*$";
-	int cflags = REG_EXTENDED;
-	regmatch_t pmatch[1];
-	const size_t nmatch = 1;
-	regex_t regex;
-	regcomp(&regex, pattern, cflags);
+//	char* pattern = "^[0-9]*$";
+//	int cflags = REG_EXTENDED;
+//	regmatch_t pmatch[1];
+//	const size_t nmatch = 1;
+//	regex_t regex;
+//	regcomp(&regex, pattern, cflags);
 	for(int i = 0; i < columnsSet->count; i++) {
 		DB_Columns* columns = columnsSet->columns[i];
 		listNode = (void*)0;
@@ -198,7 +199,8 @@ List* analyzeInsertStmt(InsertStmt* node, char* schema) {
 						case F_INT:
 						case F_LONG:
 
-							if(regexec(&regex, value, nmatch, pmatch, 0) != 0) {
+							//if(regexec(&regex, value, nmatch, pmatch, 0) != 0) {
+							if(isdigit_local(value) == -1){
 								printError("columns \"%s\" must a number.", columns->fieldName);
 								return (void*)0;
 							}

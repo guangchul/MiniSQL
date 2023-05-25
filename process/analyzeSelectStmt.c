@@ -405,6 +405,9 @@ List* analyzeSelectStmt(SelectStmt* node, char* schema) {
 			if(optTarget->isAll == 1){
 				continue;
 			}
+			if(optTarget->tableAlias != (void*)0 && strcmp(optTarget->tableAlias, fromClause->alias) != 0){
+				continue;
+			}
 			if(foundColumn(optTarget->name, columnsSet) == -1) {
 				printError("could not found column \"%s\" in table \"%s\"", optTarget->name, tableInfo->name);
 				return (void*)0;

@@ -40,6 +40,19 @@ void appendStringOffset(String* string, char* ptr, int start, int len) {
 	}
 }
 
+int isdigit_local(char* val) {
+	int len = strlen(val);
+	for(int i = 0; i < len; i++) {
+		char c = *(val + i);
+		if(c >= '0' && c <= '9'){
+			continue;
+		}else {
+			return -1;
+		}
+	}
+	return 1;
+}
+
 char* itoa_local(int number) {
 	int _number = number;
 	int len = 0;

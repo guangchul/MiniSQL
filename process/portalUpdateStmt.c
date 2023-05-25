@@ -75,7 +75,8 @@ void update(Relation* relation, List* updateValueList, Slot* slot) {
 			}
 		}
 	}
-	if(offset > (slot->tuple_len / 8 + 1) * 8 - 23){
+	int y = slot->tuple_len % 8 == 0 ? ((slot->tuple_len / 8) * 8 - 23) : (slot->tuple_len / 8 + 1) * 8 - 23;
+	if(offset > y){
 		updateNewTuple(relation, slot->tuple, slot->tuple_len, slot->columnsSet->count, buffer, offset, flag_bits);
 	} else {
 		updateOriginTuple(relation, slot->tuple, slot->tuple_len, buffer, offset);

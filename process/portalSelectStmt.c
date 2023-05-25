@@ -256,7 +256,7 @@ void writeToTempBufferBlocks(SelectRelationExtend* extend, HeapTupleHeaderData* 
 
 void appendSlot(Slot* slot, HeapTupleHeaderData* tuple, int len) {
 	HeapTupleHeaderData* _tuple = slot->tuple;
-	int attrs_count = _tuple->attrs_count + tuple->attrs_count;
+	int attrs_count = (_tuple->attrs_count & 0x7ff) + (tuple->attrs_count & 0x7ff);
 	int bits_count = attrs_count / 8 + 1;
 
 	int slot_len = (slot->tuple_len - slot->tuple->offset_of_data) + (len - tuple->offset_of_data);
@@ -283,6 +283,9 @@ void appendSlot(Slot* slot, HeapTupleHeaderData* tuple, int len) {
 
 void readBlock(Relation* relation, Slot* slot, List* whereClause) {
 	SelectRelationExtend* extend = (SelectRelationExtend*)relation->ext;
+	if(extend->isOuter != 1 && slot->tuple == (void*)0) {
+		return;
+	}
 	if(extend->isLast == 1 && slot->loop == 1) {
 		slot->loop = 0;
 	}

@@ -19,5 +19,6 @@ extern void appendStringChar(String* string, char ch);
 extern char* itoa_local(int number);
 extern void appendString(String* string, char* str);
 extern void appendStringOffset(String* string, char* ptr, int start, int len);
+extern int isdigit_local(char* val);
 
 #endif /* STRING_H_ */

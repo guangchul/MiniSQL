@@ -156,12 +156,14 @@ int insert(Relation* relation) {
 			blockWriteToFile(relation, block, pageHeaderData->page_no * BUFFERS_SIZE);
 			free(itemData);
 		}
-		DB_Index_Set* indexSet = getIndexSet(relation->tableInfo, relation->fileNode->schema);
-		for(int i = 0; i < indexSet->count; i++) {
-			DB_Index* dbIndex = indexSet->index[i];
-			Relation* indexRelation = getIndexRelation(dbIndex, relation);
-			btreeInsert(heapTupleHeaderData, dataSize, relation, indexRelation);
-			flushTable(indexRelation);
+		if(relation->tableInfo != 0){
+			DB_Index_Set* indexSet = getIndexSet(relation->tableInfo, relation->fileNode->schema);
+			for(int i = 0; i < indexSet->count; i++) {
+				DB_Index* dbIndex = indexSet->index[i];
+				Relation* indexRelation = getIndexRelation(dbIndex, relation);
+				btreeInsert(heapTupleHeaderData, dataSize, relation, indexRelation);
+				flushTable(indexRelation);
+			}
 		}
 		free(heapTupleHeaderData);
 	}
