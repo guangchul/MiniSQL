@@ -42,5 +42,6 @@ extern List* analyzeCreateIndexStmt(CreateIndexStmt* node, char* schema);
 extern DB_Index_Set* getIndexSet(DB_Table* tableInfo, char* schema);
 extern void runCreateIndexStmt(CreateIndexStmt* node, List* relationList);
 extern HeapTupleHeaderData* getTupleRecursion(Relation* relation, HeapTupleHeaderData* tuple);
+extern void resetIndexSet(DB_Table* tableInfo, char* schema);
 
 #endif /* PROCESS_H_ */

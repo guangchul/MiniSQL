@@ -89,6 +89,10 @@ void endWrite(Node* node) {
 			beginMessage(buffer, 'C');
 			appendValueWithLength(buffer, "DELETE 1");
 			break;
+		case T_CreateIndexStmt:
+			beginMessage(buffer, 'C');
+			appendValueWithLength(buffer, "CREATE INDEX");
+			break;
 		default:
 			break;
 	}

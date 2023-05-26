@@ -23,6 +23,7 @@
 #include "../global/rel.h"
 
 extern void* getFromHashMap(int cacheId, void* key);
+extern void deleteItemFromHashMap(int cacheId, void* key);
 extern int putToHashMap(int cacheId, void* key, void* val);
 extern List* getPageBlocks(FileNode* fileNode);
 extern int getFreePageBlock(Relation* relation);

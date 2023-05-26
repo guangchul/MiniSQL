@@ -316,6 +316,7 @@ void readBlock(Relation* relation, Slot* slot, List* whereClause) {
 				char* page = BufferBlocks + (extend->nextBlockNo * BUFFERS_SIZE);
 				PageHeaderData* pageHeaderData = (PageHeaderData*)page;
 				if(pageHeaderData->start_of_free_space == 28) {
+					extend->alreayMadeTempBlock = 1;
 					return;
 				}
 				itemIdData = pageHeaderData->tuple_desc[extend->nextItemPos];

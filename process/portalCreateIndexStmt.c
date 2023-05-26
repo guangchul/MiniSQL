@@ -98,4 +98,6 @@ void runCreateIndexStmt(CreateIndexStmt* node, List* relationList) {
 	insertIntoIndeces(node, tableRelation, indicesRelation, indexRelation);
 	insertIntoIndex(tableRelation, indexRelation);
 	flushTable(indexRelation);
+	writeResultHeader((void*)0, (void*)0);
+	resetIndexSet(tableRelation->tableInfo, tableRelation->fileNode->schema);
 }

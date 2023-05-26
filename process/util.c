@@ -271,3 +271,14 @@ DB_Index_Set* getIndexSet(DB_Table* tableInfo, char* schema) {
 	putToHashMap(INDEX_INFO, key, indexSet);
 	return indexSet;
 }
+
+void resetIndexSet(DB_Table* tableInfo, char* schema){
+	char* tableName = tableInfo->name;
+	char key[1024];
+	key[0] = 0;
+	strcat(key, schema);
+	strcat(key, "/");
+	strcat(key, tableName);
+	key[strlen(schema) + 1 + strlen(tableName) + 1] = 0;
+	deleteItemFromHashMap(INDEX_INFO, key);
+}
