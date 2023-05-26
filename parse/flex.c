@@ -452,15 +452,16 @@ static const flex_int16_t yy_chk[40] =
 #include <stdlib.h>
 #include "../node/parseNodes.h"
 #include "../util/mem.h"
+#include "../error/error.h"
 #include "ptype.h"
 #include "bison.h"
 #include "token.h"
 #include "parse.h"
 void yyerror(char *);
 int scanKeywordLookup();
-#line 462 "../parse/flex.c"
+#line 463 "../parse/flex.c"
 #define YY_NO_INPUT 1
-#line 464 "../parse/flex.c"
+#line 465 "../parse/flex.c"
 
 #define INITIAL 0
 
@@ -732,10 +733,10 @@ YY_DECL
 		}
 
 	{
-#line 33 "../parse/flex.l"
+#line 34 "../parse/flex.l"
 
 
-#line 739 "../parse/flex.c"
+#line 740 "../parse/flex.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -794,7 +795,7 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 35 "../parse/flex.l"
+#line 36 "../parse/flex.l"
 {
 	int len = strlen(yytext);
 	char* buff = malloc_local(len + 1);
@@ -810,7 +811,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 47 "../parse/flex.l"
+#line 48 "../parse/flex.l"
 {
 	yylval->keyword = "*";
 	return ALL;
@@ -818,7 +819,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 52 "../parse/flex.l"
+#line 53 "../parse/flex.l"
 {
 	yylval->ival = atoi(yytext);
 	return ICONST;
@@ -826,83 +827,83 @@ YY_RULE_SETUP
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 57 "../parse/flex.l"
+#line 58 "../parse/flex.l"
 {
 	return yytext[0];
 }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 61 "../parse/flex.l"
+#line 62 "../parse/flex.l"
 {
 	return yytext[0];
 }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 65 "../parse/flex.l"
+#line 66 "../parse/flex.l"
 {
 	return yytext[0];
 }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 69 "../parse/flex.l"
+#line 70 "../parse/flex.l"
 {
 	return yytext[0];
 }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 73 "../parse/flex.l"
+#line 74 "../parse/flex.l"
 {
 	return yytext[0];
 }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 77 "../parse/flex.l"
+#line 78 "../parse/flex.l"
 {
 	return yytext[0];
 }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 81 "../parse/flex.l"
+#line 82 "../parse/flex.l"
 {
 	return yytext[0];
 }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 84 "../parse/flex.l"
+#line 85 "../parse/flex.l"
 {
 	return yytext[0];
 }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 88 "../parse/flex.l"
+#line 89 "../parse/flex.l"
 {
 	return yytext[0];
 }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 92 "../parse/flex.l"
+#line 93 "../parse/flex.l"
 ;
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 93 "../parse/flex.l"
+#line 94 "../parse/flex.l"
 
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 94 "../parse/flex.l"
+#line 95 "../parse/flex.l"
 ECHO;
 	YY_BREAK
-#line 906 "../parse/flex.c"
+#line 907 "../parse/flex.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2045,7 +2046,7 @@ void yyfree (void * ptr , yyscan_t yyscanner)
 
 #define YYTABLES_NAME "yytables"
 
-#line 94 "../parse/flex.l"
+#line 95 "../parse/flex.l"
 
 
 int hash(const void *key, size_t keylen)
@@ -3100,7 +3101,8 @@ int scanKeywordLookup(char *keyword) {
 void flex_error(char* str, char* scanbuf, void* yyscanner){
 	struct yyguts_t * yyg = (struct yyguts_t*)yyscanner;
 	int loc = strlen(scanbuf);
-	fprintf(stderr, "%s at or near \"%s %s\"\n", str, yyg->yytext_r, scanbuf + loc + 1);
+	//fprintf(stderr, "%s at or near \"%s %s\"\n", str, yyg->yytext_r, scanbuf + loc + 1);
+	printError("%s at or near \"%s %s\"", str, yyg->yytext_r, scanbuf + loc + 1);
 }
 
 yyscan_t scanner_init(yy_extra_type *yyext, char *cmd) {

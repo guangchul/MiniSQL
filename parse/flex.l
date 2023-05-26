@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include "../node/parseNodes.h"
 #include "../util/mem.h"
+#include "../error/error.h"
 #include "ptype.h"
 #include "bison.h"
 #include "token.h"
@@ -1145,7 +1146,8 @@ int scanKeywordLookup(char *keyword) {
 void flex_error(char* str, char* scanbuf, void* yyscanner){
 	struct yyguts_t * yyg = (struct yyguts_t*)yyscanner;
 	int loc = strlen(scanbuf);
-	fprintf(stderr, "%s at or near \"%s %s\"\n", str, yyg->yytext_r, scanbuf + loc + 1);
+	//fprintf(stderr, "%s at or near \"%s %s\"\n", str, yyg->yytext_r, scanbuf + loc + 1);
+	printError("%s at or near \"%s %s\"", str, yyg->yytext_r, scanbuf + loc + 1);
 }
 
 yyscan_t scanner_init(yy_extra_type *yyext, char *cmd) {
