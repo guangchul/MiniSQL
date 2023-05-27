@@ -408,7 +408,7 @@ void makeSlot(ListNode* listNode, Slot* slot, List* whereClause, int* isOut) {
 		}
 	}
 	if(relation->index != (void*)0) {
-		if(indexNext == 1) {
+		if(indexNext == 1 || indexNext == 0) {
 			readBlock(relation, slot, whereClause);
 		}
 	}else {
