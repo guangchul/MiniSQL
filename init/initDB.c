@@ -23,7 +23,7 @@ char* schema_into_values[1][3] = {
 
 
 char* tables_into_values[3][5] = {
-		{"1", "tables", "tables.tb", "5", "2"},
+		{"1", "tables", "tables.tb", "5", "0"},
 		{"2", "columns", "columns.tb", "5", "0"},
 		{"3", "indices", "indices.tb", "6", "0"}
 };
@@ -50,8 +50,8 @@ char* columns_into_values[16][5] = {
 
 
 char* indices_into_values[2][6] = {
-		{"1", "1", "tables_idx_id", "tables_idx_id.idx", "1", "1"},
-		{"2", "1", "tables_idx_name", "tables_idx_name.idx", "1", "2"}
+		{"1", "10", "tables_idx_id", "tables_idx_id.idx", "1", "1"},
+		{"2", "10", "tables_idx_name", "tables_idx_name.idx", "1", "2"}
 };
 
 void initSchema() {

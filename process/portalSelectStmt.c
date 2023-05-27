@@ -189,6 +189,7 @@ int next(Relation* relation) {
 				extend->nextTempBlockSeq = 0;
 				extend->nextBlockNo = 0;
 				extend->alreayMadeTempBlock = 1;
+				extend->nextTempItemPos = 0;
 				return -1;
 			} else {
 				extend->nextTempBlockNo = nextTempBlockNo;
