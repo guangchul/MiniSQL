@@ -344,7 +344,9 @@ void readBlock(Relation* relation, Slot* slot, List* whereClause) {
 			}
 			if(result == 1) {
 				if(extend->isOuter == 0) {
-					writeToTempBufferBlocks(extend, tuple, itemIdData.lp_len);
+					if(extend->alreayMadeTempBlock == 0){
+						writeToTempBufferBlocks(extend, tuple, itemIdData.lp_len);
+					}
 					appendSlot(slot, tuple, itemIdData.lp_len);
 				}else if(extend->isOuter == 1) {
 					slot->tuple = malloc_local(itemIdData.lp_len);
