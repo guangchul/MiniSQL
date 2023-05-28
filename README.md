@@ -1,7 +1,6 @@
 # build
 	windows:
   	global/machine.h  make sure define WIN
-			![image](https://github.com/guangchul/MiniSQL/assets/132046065/b7b56482-1ec9-43f8-abdb-d316bb94222b)
 			<p align="center">
   				<img src='image/linker.png' width='70%' />
 			</p>
