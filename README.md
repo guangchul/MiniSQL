@@ -43,4 +43,24 @@ or
 ./MiniSQL -P 30001 -D /home/choi/My/test/data
 
 
+## test
 
+with psql
+
+./psql -h 127.0.0.1 -p 30001 -d base
+
+<p align="center">
+	<img src='image/test_psql.png'>
+</p>
+
+<p align="center">
+	<img src='image/test_tables_columns.png'>
+</p>
+
+<p align="center">
+	<img src='image/test_t_test_01.png'>
+</p>
+
+<p align="center">
+	<img src='image/test_index.png'>
+</p>
