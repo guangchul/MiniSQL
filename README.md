@@ -47,7 +47,11 @@ or
 
 with psql
 
-./psql -h 127.0.0.1 -p 30001 -d base
+./psql -h 127.0.0.1 -p 30001 -d base 
+
+or
+
+psql.exe -h 127.0.0.1 -p 30001 -d base 
 
 <p align="center">
 	<img src='image/test_psql.png'>
